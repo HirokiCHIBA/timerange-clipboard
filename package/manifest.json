@@ -2,7 +2,7 @@
 {
   "manifest_version": 3,
   "name": "Timerange Clipboard",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Extension to copy and paste URL parameters in any format representing time ranges.",
   "icons": {
     "16": "assets/icon/active16.png",
