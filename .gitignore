@@ -1,0 +1,4 @@
+node_modules/
+package/dist/
+.next/
+package.zip
