@@ -1,12 +1,10 @@
 {
   "name": "timerange-clipboard",
-  "version": "0.0.1",
-  "description": "Extension to copy and paste URL parameters representing time ranges between different websites (e.g. datadog and splunk)",
-  "main": "index.js",
   "scripts": {
     "dev": "next",
     "lint": "eslint src --ext .ts,.tsx --fix",
-    "build": "next build && next export -o package/dist && webpack --mode production && find package/dist -name '*.js.LICENSE.txt' | xargs rm"
+    "build": "next build && next export -o package/dist && webpack --mode production && find package/dist -name '*.js.LICENSE.txt' | xargs rm",
+    "publish": "jq -r .version package/manifest.json | xargs -I% -t zip -r timerange-clipboard-%.zip package -x '*.DS_Store' '*__MACOSX*'"
   },
   "author": "",
   "license": "MIT",

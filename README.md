@@ -54,3 +54,9 @@ npm run build
 npm run dev
 ```
 (Only dist/options works so far.)
+
+### Publish
+
+```sh
+npm run publish
+```
