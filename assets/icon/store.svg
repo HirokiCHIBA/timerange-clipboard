@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?> <!-- Created with Vectornator for iOS (http://vectornator.io/) --><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg height="100%" style="fill-rule:nonzero;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;" version="1.1" viewBox="0 0 1024 1024" width="100%" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:vectornator="http://vectornator.io" xmlns:xlink="http://www.w3.org/1999/xlink">
+<metadata>
+<vectornator:setting key="IsTimeLapseWatermarkDisabled" value="false"/>
+<vectornator:setting key="UndoHistoryDisabled" value="true"/>
+<vectornator:setting key="VNDimensionsVisible" value="true"/>
+<vectornator:setting key="VNSnapToGuides" value="true"/>
+<vectornator:setting key="WDCMYKEnabledKey" value="false"/>
+<vectornator:setting key="WDDisplayWhiteBackground" value="false"/>
+<vectornator:setting key="WDDynamicGuides" value="true"/>
+<vectornator:setting key="WDGuidesVisible" value="true"/>
+<vectornator:setting key="WDIsolateActiveLayer" value="false"/>
+<vectornator:setting key="WDOutlineMode" value="false"/>
+<vectornator:setting key="WDRulersVisible" value="true"/>
+<vectornator:setting key="WDSnapToEdges" value="true"/>
+<vectornator:setting key="WDSnapToGrid" value="false"/>
+<vectornator:setting key="WDSnapToPoints" value="false"/>
+<vectornator:setting key="WDUnits" value="Pixels"/>
+</metadata>
+<defs>
+<filter color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse" height="1510.74" id="A3C5AF3A-6D20-44CD-B5E4-CB7153FF06AB" width="1235.16" x="0" y="0">
+<feDropShadow dx="21.4713" dy="20.9644" flood-color="#286b7e" height="1510.74" stdDeviation="0" width="1235.16"/>
+</filter>
+</defs>
+<g id="レイヤー 2" vectornator:layerName="レイヤー 2" visibility="hidden">
+<path d="M128 128L896 128L896 896L128 896L128 128Z" fill="#000000" fill-opacity="0.582424" opacity="1"/>
+<path d="M64 512C64 264.576 264.576 64 512 64C759.424 64 960 264.576 960 512C960 759.424 759.424 960 512 960C264.576 960 64 759.424 64 512Z" fill="#000000" fill-opacity="0.582424" opacity="1"/>
+</g>
+<g id="レイヤー 1" vectornator:layerName="レイヤー 1">
+<path d="M233.193 144.646C199.319 144.646 171.858 178.093 171.858 219.367L171.858 867.79C171.858 909.065 199.319 942.511 233.193 942.511L790.807 942.511C824.681 942.511 852.142 909.064 852.142 867.79L852.142 219.367C852.142 178.093 824.681 144.646 790.807 144.646L776.555 144.646L776.555 173.621C776.555 215.598 742.525 249.628 700.548 249.628L323.452 249.628C281.475 249.628 247.445 215.598 247.445 173.621L247.445 144.646L233.193 144.646Z" fill="#41b4d3" opacity="1"/>
+<path d="M323.04 81.4889L700.976 81.4889C719.529 81.4889 734.57 96.5295 734.57 115.083L734.57 174.209C734.57 192.763 719.529 207.804 700.976 207.804L323.04 207.804C304.486 207.804 289.446 192.763 289.446 174.209L289.446 115.083C289.446 96.5295 304.486 81.4889 323.04 81.4889Z" fill="#286b7e" opacity="1"/>
+<path d="M708.487 353.827L708.487 439.453L563.809 439.453L563.809 837.401L462.107 837.401L462.107 439.453L316.772 439.453L316.772 353.827L708.487 353.827Z" fill="#ffffff" filter="url(#A3C5AF3A-6D20-44CD-B5E4-CB7153FF06AB)" opacity="1" vectornator:shadowAngle="0.773454" vectornator:shadowColor="#286b7e" vectornator:shadowOffset="30.0087" vectornator:shadowOpacity="1" vectornator:shadowRadius="0"/>
+</g>
+</svg>
