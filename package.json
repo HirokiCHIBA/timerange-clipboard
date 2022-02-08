@@ -4,7 +4,7 @@
     "dev": "next",
     "lint": "eslint src --ext .ts,.tsx --fix",
     "build": "next build && next export -o package/dist && webpack --mode production && find package/dist -name '*.js.LICENSE.txt' | xargs rm",
-    "publish": "jq -r .version package/manifest.json | xargs -I% -t zip -r timerange-clipboard-%.zip package -x '*.DS_Store' '*__MACOSX*'"
+    "publish": "jq -r .version package/manifest.json | xargs -I% -t zip -r timerange-clipboard-v%.zip package -x '*.DS_Store' '*__MACOSX*'"
   },
   "author": "",
   "license": "MIT",
