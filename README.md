@@ -6,6 +6,12 @@ Timerange Clipboard
 A Chrome Extension to copy and paste URL parameters in any format representing time ranges.  
 This makes it easier to go back and forth between multiple monitoring tools with different timestamp formats (e.g. Datadog and Splunk).
 
+## Install
+
+* From [Chrome Web Store](https://chrome.google.com/webstore/detail/timerange-clipboard/gbofkihmogiigjdalkplkjheholghbfc) (recommended)
+* Load as [unpacked extension](https://developer.chrome.com/docs/extensions/mv3/getstarted/#unpacked)
+  * Download & unzip released timerange-clipboard-*.zip or [build package](#build) yourself
+
 ## Usage
 
 The icon of this extension will be colored when you visit websites where this extension supports copy and paste of time ranges. Click on the icon to open the popup and click on the Copy or Paste button.
@@ -35,6 +41,16 @@ Note: There is no guarantee that these will be implemented.
 
 ## Development
 
+### Requirements
+
+* Node.js v16
+
+### setup
+
+```sh
+npm install
+```
+
 ### Lint
 
 ```sh
@@ -47,14 +63,14 @@ npm run lint
 npm run build
 ```
 
-### Development Pages with Preview
+### Develop pages with preview
 
 ```sh
 npm run dev
 ```
 (Only dist/options works so far.)
 
-### Publish
+### Build zip file for publish
 
 ```sh
 npm run publish
