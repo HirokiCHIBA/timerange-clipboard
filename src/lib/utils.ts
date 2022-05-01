@@ -1,5 +1,5 @@
 import moment from 'moment'
-import { URLFormat } from './config'
+import { TimeDisplayOptions, URLFormat } from './config'
 
 const wildcardToRegExp = (s: string): RegExp =>
   new RegExp('^' + s.split(/\*+/).map(regExpEscape).join('.*') + '$')
@@ -142,4 +142,27 @@ export const applyTimeRange = async (
   return await chrome.tabs.update(tab.id, { url: url.toString() })
 }
 
-export const displayTime = (t: number): string => moment(t).format('lll')
+const displayDateTimeFormat = (opts: TimeDisplayOptions) => {
+  return new Intl.DateTimeFormat(
+    opts.locale !== null ? opts.locale : undefined,
+    {
+      timeZone: opts.timeZone !== null ? opts.timeZone : undefined,
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }
+  )
+}
+
+export const displayTimeRange = (
+  range: TimeRange,
+  opts: TimeDisplayOptions
+): string => {
+  const format = displayDateTimeFormat(opts)
+  const start = format.format(range.start)
+  const end = format.format(range.end)
+  return `${start} - ${end}`
+}
+
+export const displayTimeZone = (opts: TimeDisplayOptions): string => {
+  return displayDateTimeFormat(opts).resolvedOptions().timeZone
+}

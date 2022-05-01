@@ -2,19 +2,21 @@ import { Button, ButtonGroup, IconButton } from '@chakra-ui/button'
 import {
   DeleteIcon,
   SettingsIcon,
+  TimeIcon,
   TriangleDownIcon,
   TriangleUpIcon,
 } from '@chakra-ui/icons'
-import { Box, Center, Flex, Spacer } from '@chakra-ui/layout'
+import { Box, Center, Flex, Spacer, Stack, Text } from '@chakra-ui/layout'
 import React, { useState, useCallback, useEffect } from 'react'
-import { ConfigV1, parseYamlConfigV1 } from '../lib/config'
+import { ConfigV1, parseYamlConfigV1, TimeDisplayOptions } from '../lib/config'
 import { URLFormat } from '../lib/config'
 import {
   Version,
   TimeRange,
   applyTimeRange,
-  displayTime,
+  displayTimeRange,
   parseTimeRange,
+  displayTimeZone,
 } from '../lib/utils'
 
 const Popup = (): JSX.Element => {
@@ -24,11 +26,21 @@ const Popup = (): JSX.Element => {
   const [clippedTimeRange, setClippedTimeRange] = useState<TimeRange | null>(
     null
   )
+  const [timeDisplayOptions, setTimeDisplayOptions] =
+    useState<TimeDisplayOptions>({})
 
   const onTabUpdate = useCallback((config: ConfigV1, tab: chrome.tabs.Tab) => {
     setCurrentTab(tab)
     const [range, format] = parseTimeRange(config.urlFormats, tab)
-    if (format) setMatchFormat(format)
+    if (format) {
+      setMatchFormat(format)
+      setTimeDisplayOptions({
+        ...config.timeDisplayOptions,
+        ...format.timeDisplayOptions,
+      })
+    } else {
+      setTimeDisplayOptions(config.timeDisplayOptions)
+    }
     if (range) setTimeRange(range)
   }, [])
 
@@ -49,6 +61,9 @@ const Popup = (): JSX.Element => {
     const syncItem = await chrome.storage.sync.get('configYaml')
     if (!syncItem.configYaml) return
     const config = parseYamlConfigV1(syncItem.configYaml)
+
+    if (config.timeDisplayOptions)
+      setTimeDisplayOptions(config.timeDisplayOptions)
 
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
     if (tab) onTabUpdate(config, tab)
@@ -73,17 +88,11 @@ const Popup = (): JSX.Element => {
   return (
     <Box w="450px">
       <Flex m="10px" border="1px" borderRadius="base" borderColor="green.600">
-        <Center fontSize="xs" w="5rem" bgColor="green.600" color="white">
+        <Center fontSize="xs" w="4rem" bgColor="green.600" color="white">
           Active
         </Center>
-        <Center flex="1" fontSize="sm" h="3rem">
-          {timeRange ? (
-            <>
-              {displayTime(timeRange.start)} - {displayTime(timeRange.end)}
-            </>
-          ) : (
-            '-'
-          )}
+        <Center flex="1" fontSize="sm" h="3rem" whiteSpace="nowrap">
+          {timeRange ? displayTimeRange(timeRange, timeDisplayOptions) : '-'}
         </Center>
       </Flex>
       <ButtonGroup m="10px" d="flex">
@@ -95,22 +104,23 @@ const Popup = (): JSX.Element => {
         </Button>
       </ButtonGroup>
       <Flex m="10px" border="1px" borderRadius="base" borderColor="blue.600">
-        <Center fontSize="xs" w="5rem" bgColor="blue.600" color="white">
+        <Center fontSize="xs" w="4rem" bgColor="blue.600" color="white">
           Clipped
         </Center>
-        <Center flex="1" fontSize="sm" h="3rem">
-          {clippedTimeRange ? (
-            <>
-              {displayTime(clippedTimeRange.start)} -{' '}
-              {displayTime(clippedTimeRange.end)}
-            </>
-          ) : (
-            '-'
-          )}
+        <Center flex="1" fontSize="sm" h="3rem" whiteSpace="nowrap">
+          {clippedTimeRange
+            ? displayTimeRange(clippedTimeRange, timeDisplayOptions)
+            : '-'}
         </Center>
       </Flex>
       <Flex m="10px" alignItems="center">
-        <Box>Timerange Clipboard v{Version}</Box>
+        <Stack spacing={0}>
+          <Text display="inline-flex" alignItems="center">
+            <TimeIcon mr={1} />
+            {displayTimeZone(timeDisplayOptions)}
+          </Text>
+          <Text>Timerange Clipboard v{Version}</Text>
+        </Stack>
         <Spacer />
         <ButtonGroup>
           <IconButton
