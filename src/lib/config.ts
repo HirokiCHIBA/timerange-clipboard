@@ -1,6 +1,36 @@
 import { load } from 'js-yaml'
 import { z } from 'zod'
 
+const validateDateTimeFormatArgs = (
+  locale?: string | string[],
+  options?: Intl.DateTimeFormatOptions
+): boolean => {
+  try {
+    new Intl.DateTimeFormat(locale, options)
+  } catch (e) {
+    return false
+  }
+  return true
+}
+export const TimeDisplayOptions = z
+  .object({
+    locale: z
+      .string()
+      .refine((v) => validateDateTimeFormatArgs(v), 'Unsupported locale')
+      .optional()
+      .nullable(),
+    timeZone: z
+      .string()
+      .refine(
+        (v) => validateDateTimeFormatArgs([], { timeZone: v }),
+        'Unsupported time zone'
+      )
+      .optional()
+      .nullable(),
+  })
+  .strict()
+export type TimeDisplayOptions = z.infer<typeof TimeDisplayOptions>
+
 export const URLParam = z
   .object({
     key: z.string(),
@@ -22,6 +52,7 @@ export const URLFormat = z
     urlWildcard: z.string(),
     timeFormat: z.string().optional(),
     timeOneSecond: z.number().optional(),
+    timeDisplayOptions: TimeDisplayOptions.default({}),
     paramStart: z.string().optional(),
     paramEnd: z.string().optional(),
     paramDuration: z.union([z.string(), URLParamDuration]).optional(),
@@ -69,6 +100,7 @@ export const ConfigV1 = z
     configVersion: z
       .number()
       .refine((v: number) => v === 1, { message: 'The value must be 1' }),
+    timeDisplayOptions: TimeDisplayOptions.default({}),
     urlFormats: z.array(URLFormat).default([]),
   })
   .strict()
@@ -79,6 +111,12 @@ export const parseYamlConfigV1 = (yaml: string): ConfigV1 =>
 
 export const configSpec = `# Version of config spec. Fixed value.
 configVersion: 1
+
+# (Optional) Options to display time in the UI. If omitted, the browser's default is used.
+# This setting can be overridden for each urlFormat by \`urlFormats.*.timeDisplayOptions\`.
+timeDisplayOptions:
+  locale: 'en-US' # Specify a string with a BCP 47 language tag.
+  timeZone: UTC   # Specify \`UTC\` or an IANA time zone name (e.g. \`America/Los_Angeles\`).
 
 # List of URL formats with timestamps. If multiple matches are found, the earliest one will be used.
 urlFormats:
@@ -113,6 +151,13 @@ urlFormats:
     # (Optional) List of query parameters to be removed to URLs on "Paste".
     paramDelete:
       - sid
+    
+    # (Optional) Same as the root \`timeDisplayOptions\`.
+    # This setting is applied (merged with the root setting) only when a page matching this urlFormat is active.
+    # Leave empty or \`null\` for each property if you prefer to use the browser's default instead of the root setting.
+    timeDisplayOptions:
+      locale:               # Use the browser's default instead of the root setting \`en-US\`.
+      timeZone: Asia/Tokyo  # Use \`Asia/Tokyo\` instead of the root setting \`UTC\`.
 `
 
 export const defaultConfigYaml = `configVersion: 1
