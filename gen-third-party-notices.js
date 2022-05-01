@@ -14,6 +14,14 @@ const licenseOverrides = [
   {
     "namePrefix": "hast-util-to-string",
     "licenseUrl": "https://raw.githubusercontent.com/rehypejs/rehype-minify/main/license"
+  },
+  {
+    "namePrefix": "rehype",
+    "licenseUrl": "https://raw.githubusercontent.com/rehypejs/rehype/main/license"
+  },
+  {
+    "namePrefix": "toggle-selection",
+    "licenseUrl": "https://raw.githubusercontent.com/sudodoki/toggle-selection/gh-pages/LICENSE"
   }
 ]
 
