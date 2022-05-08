@@ -3,12 +3,13 @@
   "scripts": {
     "dev": "next",
     "lint": "eslint src --ext .ts,.tsx --fix",
-    "build": "next build && next export -o package/dist && webpack --mode production && find package/dist -name '*.js.LICENSE.txt' | xargs rm",
+    "build": "next build && next export -o package/dist && webpack --mode production",
     "publish": "jq -r .version package/manifest.json | xargs -I% -t zip -r timerange-clipboard-v%.zip package -x '*.DS_Store' '*__MACOSX*'"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@babel/runtime": "^7.17.9",
     "@chakra-ui/icons": "^1.1.7",
     "@chakra-ui/react": "^1.8.8",
     "@emotion/react": "^11.9.0",
@@ -25,6 +26,7 @@
   "devDependencies": {
     "@babel/cli": "^7.17.10",
     "@babel/core": "^7.17.10",
+    "@babel/plugin-transform-runtime": "^7.17.10",
     "@babel/preset-env": "^7.17.10",
     "@babel/preset-typescript": "^7.16.7",
     "@types/chrome": "0.0.183",

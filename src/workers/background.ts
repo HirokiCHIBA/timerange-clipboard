@@ -1,8 +1,20 @@
-import { ConfigV1, defaultConfigYaml, parseYamlConfigV1 } from '../lib/config'
-import { parseTimeRange } from '../lib/utils'
+import {
+  ConfigV1,
+  defaultConfigYaml,
+  parseYamlConfigV1,
+  TimeDisplayOptions,
+  URLFormat,
+} from '../lib/config'
+import { ToastManager } from '../lib/toast'
+import {
+  applyTimeRange,
+  displayTimeRange,
+  displayTimeZone,
+  parseTimeRange,
+  TimeRange,
+} from '../lib/utils'
 
 let config: ConfigV1
-
 chrome.storage.sync.get('configYaml', (item) => {
   if (item.configYaml) {
     config = parseYamlConfigV1(item.configYaml)
@@ -10,11 +22,13 @@ chrome.storage.sync.get('configYaml', (item) => {
     config = parseYamlConfigV1(defaultConfigYaml)
     chrome.storage.sync.set({ configYaml: defaultConfigYaml }, undefined)
   }
+  updateTimeDisplayOptions()
 })
-
 chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName == 'sync' && changes.configYaml) {
     config = parseYamlConfigV1(changes.configYaml.newValue)
+    updateTimeDisplayOptions()
+    updateTitle()
   }
 })
 
@@ -40,13 +54,49 @@ const inactiveIcons =
         )
       )
     : {}
+
+let timeDisplayOptions: TimeDisplayOptions
+const updateTimeDisplayOptions = () => {
+  timeDisplayOptions = matchFormat
+    ? { ...config.timeDisplayOptions, ...matchFormat.timeDisplayOptions }
+    : config.timeDisplayOptions
+}
+
+let clippedTimeRange: TimeRange | null
+chrome.storage.local.get('timeRange', (item) => {
+  if (item.timeRange) clippedTimeRange = item.timeRange as TimeRange
+  updateTitle()
+})
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName == 'local' && changes.timeRange) {
+    clippedTimeRange = changes.timeRange.newValue as TimeRange
+    updateTitle()
+  }
+})
+
+const updateTitle = () => {
+  const title = clippedTimeRange
+    ? `${manifest.name}\nClipped: ${displayTimeRange(
+        clippedTimeRange,
+        timeDisplayOptions
+      )} (${displayTimeZone(timeDisplayOptions)})`
+    : manifest.name
+  chrome.action.setTitle({ title: title }, undefined)
+}
+
+let currentTab: chrome.tabs.Tab | null
+let matchFormat: URLFormat | null
+let timeRange: TimeRange | null
 const onActiveTabChange = (tab: chrome.tabs.Tab) => {
-  const [, format] = parseTimeRange(config.urlFormats, tab)
-  if (format) {
+  currentTab = tab
+  ;[timeRange, matchFormat] = parseTimeRange(config.urlFormats, tab)
+  if (matchFormat) {
     chrome.action.setIcon({ path: activeIcons, tabId: tab.id }, undefined)
   } else {
     chrome.action.setIcon({ path: inactiveIcons, tabId: tab.id }, undefined)
   }
+  updateTimeDisplayOptions()
+  updateTitle()
 }
 
 chrome.tabs.onActivated.addListener((activeInfo) => {
@@ -66,6 +116,43 @@ chrome.windows.onFocusChanged.addListener(() => {
     if (!tab) return
     onActiveTabChange(tab)
   })
+})
+
+const toastManager = new ToastManager()
+chrome.commands.onCommand.addListener((command) => {
+  if (command == 'copy') {
+    if (!timeRange) {
+      currentTab && toastManager.notify(currentTab, 'Unsupported page')
+      return
+    }
+    const range = timeRange
+    chrome.storage.local.set({ timeRange: timeRange }, () => {
+      currentTab && toastManager.notify(currentTab, toastContent('Copy', range))
+    })
+  }
+  if (command == 'paste') {
+    if (!currentTab) return
+    if (!matchFormat) {
+      toastManager.notify(currentTab, 'Unsupported page')
+      return
+    }
+    if (!clippedTimeRange) {
+      toastManager.notify(currentTab, 'Empty clipboard')
+      return
+    }
+    const range = clippedTimeRange
+    void applyTimeRange(currentTab, clippedTimeRange, matchFormat).then(
+      (tab) => {
+        tab && toastManager.notify(tab, toastContent('Paste', range), true)
+      }
+    )
+  }
+})
+
+const toastContent = (command: string, range: TimeRange) => ({
+  command,
+  timeRange: displayTimeRange(range, timeDisplayOptions),
+  timeZone: displayTimeZone(timeDisplayOptions),
 })
 
 export {}

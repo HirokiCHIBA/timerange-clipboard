@@ -1,33 +1,33 @@
 const path = require('path')
+const TerserPlugin = require('terser-webpack-plugin');
 const MomentLocalesPlugin = require('moment-locales-webpack-plugin')
 const LicensePlugin = require('webpack-license-plugin')
 
 const genThirdPartyNotices = require('./gen-third-party-notices')
 
 module.exports = {
-  entry: './src/workers/background.ts',
+  entry: {
+    background: './src/workers/background.ts',
+  },
   module: {
     rules: [
       {
-        test: /\.ts$/,
+        test: /\.(ts|tsx)$/,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
           options: {
-            presets: [
-              "@babel/preset-typescript",
-              "@babel/preset-env"
-            ],
+            presets: ["next/babel"],
           },
         },
       },
     ],
   },
   resolve: {
-    extensions: ['.ts', '.js'],
+    extensions: ['.ts', '.tsx', '.js'],
   },
   output: {
-    filename: 'background.js',
+    filename: '[name].js',
     path: path.resolve(__dirname, 'package/dist'),
   },
   plugins: [
@@ -37,6 +37,17 @@ module.exports = {
       additionalFiles: {
         'THIRD-PARTY-NOTICES.txt': genThirdPartyNotices
       }
-    })
-  ]
+    }),
+  ],
+  optimization: {
+    minimizer: [new TerserPlugin({
+      extractComments: false,
+      terserOptions: {
+        format: {
+          comments: false,
+        },
+      },
+    })]
+  },
+  devtool: 'cheap-module-source-map'
 }

@@ -17,9 +17,27 @@
     },
     "default_popup": "dist/popup.html"
   },
+  "web_accessible_resources": [{
+    "resources": ["assets/*"],
+    "matches": ["<all_urls>"]
+  }],
   "background": {
     "service_worker": "dist/background.js"
   },
   "options_page": "dist/options.html",
-  "permissions": ["tabs", "storage"]
+  "permissions": ["tabs", "storage", "activeTab", "scripting"],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": "Alt+T",
+      "description": "Open Timerange Clipboard"
+    },
+    "copy": {
+      "suggested_key": "Alt+C",
+      "description": "Copy timerange"
+    },
+    "paste": {
+      "suggested_key": "Alt+V",
+      "description": "Paste timerange"
+    }
+  }
 }
