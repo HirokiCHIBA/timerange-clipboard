@@ -1,3 +1,4 @@
+import { ToastManager } from '../components/Toast'
 import {
   ConfigV1,
   defaultConfigYaml,
@@ -5,7 +6,6 @@ import {
   TimeDisplayOptions,
   URLFormat,
 } from '../lib/config'
-import { ToastManager } from '../lib/toast'
 import {
   applyTimeRange,
   displayTimeRange,
@@ -119,40 +119,41 @@ chrome.windows.onFocusChanged.addListener(() => {
 })
 
 const toastManager = new ToastManager()
+const toastPropsUnsupported = { title: 'Unsupported page' }
+const toastPropsEmpty = { title: 'Empty clipboard' }
+const toastProps = (command: string, range: TimeRange) => ({
+  title: command,
+  message: displayTimeRange(range, timeDisplayOptions),
+  contextMessage: displayTimeZone(timeDisplayOptions),
+})
 chrome.commands.onCommand.addListener((command) => {
   if (command == 'copy') {
     if (!timeRange) {
-      currentTab && toastManager.notify(currentTab, 'Unsupported page')
+      currentTab && toastManager.notify(currentTab, toastPropsUnsupported)
       return
     }
     const range = timeRange
     chrome.storage.local.set({ timeRange: timeRange }, () => {
-      currentTab && toastManager.notify(currentTab, toastContent('Copy', range))
+      currentTab && toastManager.notify(currentTab, toastProps('Copy', range))
     })
   }
   if (command == 'paste') {
     if (!currentTab) return
     if (!matchFormat) {
-      toastManager.notify(currentTab, 'Unsupported page')
+      toastManager.notify(currentTab, toastPropsUnsupported)
       return
     }
     if (!clippedTimeRange) {
-      toastManager.notify(currentTab, 'Empty clipboard')
+      toastManager.notify(currentTab, toastPropsEmpty)
       return
     }
     const range = clippedTimeRange
     void applyTimeRange(currentTab, clippedTimeRange, matchFormat).then(
       (tab) => {
-        tab && toastManager.notify(tab, toastContent('Paste', range), true)
+        tab && toastManager.notify(tab, toastProps('Paste', range), true)
       }
     )
   }
-})
-
-const toastContent = (command: string, range: TimeRange) => ({
-  command,
-  timeRange: displayTimeRange(range, timeDisplayOptions),
-  timeZone: displayTimeZone(timeDisplayOptions),
 })
 
 export {}

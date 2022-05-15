@@ -52,8 +52,8 @@ const genThirdPartyNotices = async packages => {
   return tpnHeader + all.map(p => {
     const override = overrides.find(e => p.name.startsWith(e.namePrefix))
     if (override) p.licenseText = override.licenseText
-    if (!p.licenseText) throw new Error(`no license text: ${p.name}`)
-    if (!licenseWhitelist.includes(p.license)) throw new Error(`license not whitelisted: ${p.name}: ${p.license}`)
+    if (!p.licenseText) console.error(`no license text: ${p.name}`)
+    if (!licenseWhitelist.includes(p.license)) console.error(`license not whitelisted: ${p.name}: ${p.license}`)
     return tpnTemplate(p)
   }).join('')
 }
