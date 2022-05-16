@@ -63,7 +63,7 @@ const doCopy = () => {
     return
   }
   const toastProps = {
-    title: 'Copy',
+    title: 'Copied',
     message: displayTimeRange(s.activeTimeRange, s.activeTimeDisplayOptions),
     contextMessage: displayTimeZone(s.activeTimeDisplayOptions),
   }
@@ -83,7 +83,7 @@ const doPaste = () => {
     return
   }
   const toastProps = {
-    title: 'Paste',
+    title: 'Pasted',
     message: displayTimeRange(s.clippedTimeRange, s.activeTimeDisplayOptions),
     contextMessage: displayTimeZone(s.activeTimeDisplayOptions),
   }
