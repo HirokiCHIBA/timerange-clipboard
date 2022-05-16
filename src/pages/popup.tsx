@@ -7,80 +7,72 @@ import {
   TriangleUpIcon,
 } from '@chakra-ui/icons'
 import { Box, Center, Flex, Spacer, Stack, Text } from '@chakra-ui/layout'
-import React, { useState, useCallback, useEffect } from 'react'
-import { ConfigV1, parseYamlConfigV1, TimeDisplayOptions } from '../lib/config'
+import React, { useCallback, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { parseYamlConfigV1, TimeDisplayOptions } from '../lib/config'
 import { URLFormat } from '../lib/config'
+import { actions, AppState } from '../lib/state'
 import {
   Version,
   TimeRange,
   applyTimeRange,
   displayTimeRange,
-  parseTimeRange,
   displayTimeZone,
 } from '../lib/utils'
 
 const Popup = (): JSX.Element => {
-  const [currentTab, setCurrentTab] = useState<chrome.tabs.Tab | null>(null)
-  const [matchFormat, setMatchFormat] = useState<URLFormat | null>(null)
-  const [timeRange, setTimeRange] = useState<TimeRange | null>(null)
-  const [clippedTimeRange, setClippedTimeRange] = useState<TimeRange | null>(
-    null
+  const dispatch = useDispatch()
+  const activeTab = useSelector<AppState, chrome.tabs.Tab | null>(
+    (state) => state.activeTab
   )
-  const [timeDisplayOptions, setTimeDisplayOptions] =
-    useState<TimeDisplayOptions>({})
-
-  const onTabUpdate = useCallback((config: ConfigV1, tab: chrome.tabs.Tab) => {
-    setCurrentTab(tab)
-    const [range, format] = parseTimeRange(config.urlFormats, tab)
-    if (format) {
-      setMatchFormat(format)
-      setTimeDisplayOptions({
-        ...config.timeDisplayOptions,
-        ...format.timeDisplayOptions,
-      })
-    } else {
-      setTimeDisplayOptions(config.timeDisplayOptions)
-    }
-    if (range) setTimeRange(range)
-  }, [])
+  const activeTimeDisplayOptions = useSelector<AppState, TimeDisplayOptions>(
+    (state) => state.activeTimeDisplayOptions
+  )
+  const activeURLFormat = useSelector<AppState, URLFormat | null>(
+    (state) => state.activeURLFormat
+  )
+  const activeTimeRange = useSelector<AppState, TimeRange | null>(
+    (state) => state.activeTimeRange
+  )
+  const clippedTimeRange = useSelector<AppState, TimeRange | null>(
+    (state) => state.clippedTimeRange
+  )
 
   const doCopy = useCallback(async () => {
-    await chrome.storage.local.set({ timeRange: timeRange })
-  }, [timeRange])
+    if (!activeTimeRange) return
+    await chrome.storage.local.set({ timeRange: activeTimeRange })
+  }, [activeTimeRange])
 
   const doPaste = useCallback(async () => {
-    if (!clippedTimeRange || !currentTab || !matchFormat) return
-    await applyTimeRange(currentTab, clippedTimeRange, matchFormat)
-  }, [currentTab, clippedTimeRange, matchFormat])
+    if (!clippedTimeRange || !activeTab || !activeURLFormat) return
+    await applyTimeRange(activeTab, clippedTimeRange, activeURLFormat)
+  }, [activeTab, clippedTimeRange, activeURLFormat])
 
   const doClear = useCallback(async () => {
     await chrome.storage.local.remove('timeRange')
-  }, [timeRange])
+  }, [activeTimeRange])
 
   const init = useCallback(async () => {
     const syncItem = await chrome.storage.sync.get('configYaml')
     if (!syncItem.configYaml) return
     const config = parseYamlConfigV1(syncItem.configYaml)
-
-    if (config.timeDisplayOptions)
-      setTimeDisplayOptions(config.timeDisplayOptions)
+    dispatch(actions.setConfig(config))
 
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
-    if (tab) onTabUpdate(config, tab)
-    const localItem = await chrome.storage.local.get('timeRange')
-    if (localItem.timeRange) setClippedTimeRange(localItem.timeRange)
-
+    if (tab) dispatch(actions.setActiveTab(tab))
     const watchId = tab.id
     chrome.tabs.onUpdated.addListener((tabId, change, tab) => {
       if (tabId == watchId && change.url) {
-        onTabUpdate(config, tab)
+        dispatch(actions.setActiveTab(tab))
       }
     })
 
+    const localItem = await chrome.storage.local.get('timeRange')
+    if (localItem.timeRange)
+      dispatch(actions.setClippedTimeRange(localItem.timeRange))
     chrome.storage.onChanged.addListener((changes, areaName) => {
-      if (areaName == 'local' && changes.timeRange) {
-        setClippedTimeRange(changes.timeRange.newValue)
-      }
+      if (areaName != 'local' || !changes.timeRange) return
+      dispatch(actions.setClippedTimeRange(changes.timeRange.newValue))
     })
   }, [])
   useEffect(() => void init(), [])
@@ -92,7 +84,9 @@ const Popup = (): JSX.Element => {
           Active
         </Center>
         <Center flex="1" fontSize="sm" h="3rem" whiteSpace="nowrap">
-          {timeRange ? displayTimeRange(timeRange, timeDisplayOptions) : '-'}
+          {activeTimeRange
+            ? displayTimeRange(activeTimeRange, activeTimeDisplayOptions)
+            : '-'}
         </Center>
       </Flex>
       <ButtonGroup m="10px" d="flex">
@@ -109,7 +103,7 @@ const Popup = (): JSX.Element => {
         </Center>
         <Center flex="1" fontSize="sm" h="3rem" whiteSpace="nowrap">
           {clippedTimeRange
-            ? displayTimeRange(clippedTimeRange, timeDisplayOptions)
+            ? displayTimeRange(clippedTimeRange, activeTimeDisplayOptions)
             : '-'}
         </Center>
       </Flex>
@@ -117,7 +111,7 @@ const Popup = (): JSX.Element => {
         <Stack spacing={0}>
           <Text display="inline-flex" alignItems="center">
             <TimeIcon mr={1} />
-            {displayTimeZone(timeDisplayOptions)}
+            {displayTimeZone(activeTimeDisplayOptions)}
           </Text>
           <Text>Timerange Clipboard v{Version}</Text>
         </Stack>

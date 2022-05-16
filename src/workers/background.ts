@@ -1,36 +1,12 @@
 import { ToastManager } from '../components/Toast'
-import {
-  ConfigV1,
-  defaultConfigYaml,
-  parseYamlConfigV1,
-  TimeDisplayOptions,
-  URLFormat,
-} from '../lib/config'
+import { defaultConfigYaml, parseYamlConfigV1 } from '../lib/config'
+import { store, actions } from '../lib/state'
 import {
   applyTimeRange,
   displayTimeRange,
   displayTimeZone,
-  parseTimeRange,
   TimeRange,
 } from '../lib/utils'
-
-let config: ConfigV1
-chrome.storage.sync.get('configYaml', (item) => {
-  if (item.configYaml) {
-    config = parseYamlConfigV1(item.configYaml)
-  } else {
-    config = parseYamlConfigV1(defaultConfigYaml)
-    chrome.storage.sync.set({ configYaml: defaultConfigYaml }, undefined)
-  }
-  updateTimeDisplayOptions()
-})
-chrome.storage.onChanged.addListener((changes, areaName) => {
-  if (areaName == 'sync' && changes.configYaml) {
-    config = parseYamlConfigV1(changes.configYaml.newValue)
-    updateTimeDisplayOptions()
-    updateTitle()
-  }
-})
 
 const manifest = chrome.runtime.getManifest()
 const activeIcons = manifest.icons
@@ -55,105 +31,118 @@ const inactiveIcons =
       )
     : {}
 
-let timeDisplayOptions: TimeDisplayOptions
-const updateTimeDisplayOptions = () => {
-  timeDisplayOptions = matchFormat
-    ? { ...config.timeDisplayOptions, ...matchFormat.timeDisplayOptions }
-    : config.timeDisplayOptions
-}
+// view
+store.subscribe(() => {
+  const s = store.getState()
 
-let clippedTimeRange: TimeRange | null
-chrome.storage.local.get('timeRange', (item) => {
-  if (item.timeRange) clippedTimeRange = item.timeRange as TimeRange
-  updateTitle()
-})
-chrome.storage.onChanged.addListener((changes, areaName) => {
-  if (areaName == 'local' && changes.timeRange) {
-    clippedTimeRange = changes.timeRange.newValue as TimeRange
-    updateTitle()
-  }
-})
-
-const updateTitle = () => {
-  const title = clippedTimeRange
-    ? `${manifest.name}\nClipped: ${displayTimeRange(
-        clippedTimeRange,
-        timeDisplayOptions
-      )} (${displayTimeZone(timeDisplayOptions)})`
-    : manifest.name
-  chrome.action.setTitle({ title: title }, undefined)
-}
-
-let currentTab: chrome.tabs.Tab | null
-let matchFormat: URLFormat | null
-let timeRange: TimeRange | null
-const onActiveTabChange = (tab: chrome.tabs.Tab) => {
-  currentTab = tab
-  ;[timeRange, matchFormat] = parseTimeRange(config.urlFormats, tab)
-  if (matchFormat) {
-    chrome.action.setIcon({ path: activeIcons, tabId: tab.id }, undefined)
+  if (s.activeURLFormat) {
+    void chrome.action.setIcon({ path: activeIcons, tabId: s.activeTab?.id })
   } else {
-    chrome.action.setIcon({ path: inactiveIcons, tabId: tab.id }, undefined)
+    void chrome.action.setIcon({ path: inactiveIcons, tabId: s.activeTab?.id })
   }
-  updateTimeDisplayOptions()
-  updateTitle()
-}
 
-chrome.tabs.onActivated.addListener((activeInfo) => {
-  chrome.tabs.get(activeInfo.tabId, (tab) => {
-    onActiveTabChange(tab)
-  })
+  const title = s.clippedTimeRange
+    ? `${manifest.name}\nClipped: ${displayTimeRange(
+        s.clippedTimeRange,
+        s.activeTimeDisplayOptions
+      )} (${displayTimeZone(s.activeTimeDisplayOptions)})`
+    : manifest.name
+  void chrome.action.setTitle({ title })
 })
 
-chrome.tabs.onUpdated.addListener((_tabId, change, tab) => {
-  if (tab.active && (change.url || change.status)) {
-    onActiveTabChange(tab)
-  }
-})
-
-chrome.windows.onFocusChanged.addListener(() => {
-  chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-    if (!tab) return
-    onActiveTabChange(tab)
-  })
-})
-
+// toast
 const toastManager = new ToastManager()
 const toastPropsUnsupported = { title: 'Unsupported page' }
 const toastPropsEmpty = { title: 'Empty clipboard' }
-const toastProps = (command: string, range: TimeRange) => ({
-  title: command,
-  message: displayTimeRange(range, timeDisplayOptions),
-  contextMessage: displayTimeZone(timeDisplayOptions),
-})
-chrome.commands.onCommand.addListener((command) => {
-  if (command == 'copy') {
-    if (!timeRange) {
-      currentTab && toastManager.notify(currentTab, toastPropsUnsupported)
-      return
-    }
-    const range = timeRange
-    chrome.storage.local.set({ timeRange: timeRange }, () => {
-      currentTab && toastManager.notify(currentTab, toastProps('Copy', range))
-    })
+
+// functions for keyboard shortcuts
+const doCopy = () => {
+  const s = store.getState()
+  if (!s.activeTimeRange) {
+    s.activeTab && toastManager.notify(s.activeTab, toastPropsUnsupported)
+    return
   }
-  if (command == 'paste') {
-    if (!currentTab) return
-    if (!matchFormat) {
-      toastManager.notify(currentTab, toastPropsUnsupported)
-      return
+  const toastProps = {
+    title: 'Copy',
+    message: displayTimeRange(s.activeTimeRange, s.activeTimeDisplayOptions),
+    contextMessage: displayTimeZone(s.activeTimeDisplayOptions),
+  }
+  void chrome.storage.local.set({ timeRange: s.activeTimeRange }).then(() => {
+    s.activeTab && toastManager.notify(s.activeTab, toastProps)
+  })
+}
+const doPaste = () => {
+  const s = store.getState()
+  if (!s.activeTab) return
+  if (!s.activeURLFormat) {
+    toastManager.notify(s.activeTab, toastPropsUnsupported)
+    return
+  }
+  if (!s.clippedTimeRange) {
+    toastManager.notify(s.activeTab, toastPropsEmpty)
+    return
+  }
+  const toastProps = {
+    title: 'Paste',
+    message: displayTimeRange(s.clippedTimeRange, s.activeTimeDisplayOptions),
+    contextMessage: displayTimeZone(s.activeTimeDisplayOptions),
+  }
+  void applyTimeRange(s.activeTab, s.clippedTimeRange, s.activeURLFormat).then(
+    (tab) => {
+      tab && toastManager.notify(tab, toastProps, true)
     }
-    if (!clippedTimeRange) {
-      toastManager.notify(currentTab, toastPropsEmpty)
-      return
-    }
-    const range = clippedTimeRange
-    void applyTimeRange(currentTab, clippedTimeRange, matchFormat).then(
-      (tab) => {
-        tab && toastManager.notify(tab, toastProps('Paste', range), true)
-      }
+  )
+}
+
+// listener for keyboard shortcuts
+chrome.commands.onCommand.addListener((command) => {
+  if (command == 'copy') doCopy()
+  if (command == 'paste') doPaste()
+})
+
+// sync state with chrome.storage
+chrome.storage.sync.get('configYaml', (item) => {
+  if (item.configYaml) {
+    store.dispatch(actions.setConfig(parseYamlConfigV1(item.configYaml)))
+  } else {
+    store.dispatch(actions.setConfig(parseYamlConfigV1(defaultConfigYaml)))
+    void chrome.storage.sync.set({ configYaml: defaultConfigYaml })
+  }
+})
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName == 'sync' && changes.configYaml) {
+    store.dispatch(
+      actions.setConfig(parseYamlConfigV1(changes.configYaml.newValue))
     )
   }
+})
+chrome.storage.local.get('timeRange', (item) => {
+  if (!item.timeRange) return
+  store.dispatch(actions.setClippedTimeRange(item.timeRange as TimeRange))
+})
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName != 'local' || !changes.timeRange) return
+  store.dispatch(
+    actions.setClippedTimeRange(changes.timeRange.newValue as TimeRange)
+  )
+})
+
+// update active tab
+chrome.tabs.onActivated.addListener((activeInfo) => {
+  chrome.tabs.get(activeInfo.tabId, (tab) => {
+    store.dispatch(actions.setActiveTab(tab))
+  })
+})
+chrome.tabs.onUpdated.addListener((_tabId, change, tab) => {
+  if (tab.active && (change.url || change.status)) {
+    store.dispatch(actions.setActiveTab(tab))
+  }
+})
+chrome.windows.onFocusChanged.addListener(() => {
+  chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+    if (!tab) return
+    store.dispatch(actions.setActiveTab(tab))
+  })
 })
 
 export {}
