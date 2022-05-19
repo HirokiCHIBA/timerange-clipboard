@@ -9,6 +9,7 @@ import {
 import { Box, Center, Flex, Spacer, Stack, Text } from '@chakra-ui/layout'
 import React, { useCallback, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { RuntimeMessage } from '../lib/types'
 import { parseYamlConfigV1, TimeDisplayOptions } from '../lib/config'
 import { URLFormat } from '../lib/config'
 import { actions, AppState } from '../lib/state'
@@ -44,8 +45,28 @@ const Popup = (): JSX.Element => {
   }, [activeTimeRange])
 
   const doPaste = useCallback(async () => {
+    // update tab
     if (!clippedTimeRange || !activeTab || !activeURLFormat) return
-    await applyTimeRange(activeTab, clippedTimeRange, activeURLFormat)
+    const tab = await applyTimeRange(
+      activeTab,
+      clippedTimeRange,
+      activeURLFormat
+    )
+
+    // toast notification
+    if (!tab) return
+    const props = {
+      title: 'Pasted',
+      message: displayTimeRange(clippedTimeRange, activeTimeDisplayOptions),
+      contextMessage: displayTimeZone(activeTimeDisplayOptions),
+    }
+    const success = await chrome.runtime.sendMessage<RuntimeMessage, boolean>({
+      type: 'toast',
+      payload: { tab, props },
+    })
+
+    // close popup (if notification was succeeded)
+    if (success) window.close()
   }, [activeTab, clippedTimeRange, activeURLFormat])
 
   const doClear = useCallback(async () => {
@@ -53,11 +74,13 @@ const Popup = (): JSX.Element => {
   }, [activeTimeRange])
 
   const init = useCallback(async () => {
+    // load config
     const syncItem = await chrome.storage.sync.get('configYaml')
     if (!syncItem.configYaml) return
     const config = parseYamlConfigV1(syncItem.configYaml)
     dispatch(actions.setConfig(config))
 
+    // get active tab
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
     if (tab) dispatch(actions.setActiveTab(tab))
     const watchId = tab.id
@@ -67,6 +90,7 @@ const Popup = (): JSX.Element => {
       }
     })
 
+    // sync clipboard with chrome.storage
     const localItem = await chrome.storage.local.get('timeRange')
     if (localItem.timeRange)
       dispatch(actions.setClippedTimeRange(localItem.timeRange))
@@ -90,10 +114,20 @@ const Popup = (): JSX.Element => {
         </Center>
       </Flex>
       <ButtonGroup m="10px" d="flex">
-        <Button onClick={doCopy} leftIcon={<TriangleDownIcon />} flex="1">
+        <Button
+          onClick={doCopy}
+          leftIcon={<TriangleDownIcon />}
+          flex="1"
+          disabled={!activeTimeRange}
+        >
           Copy
         </Button>
-        <Button onClick={doPaste} leftIcon={<TriangleUpIcon />} flex="1">
+        <Button
+          onClick={doPaste}
+          leftIcon={<TriangleUpIcon />}
+          flex="1"
+          disabled={!clippedTimeRange || !activeTab || !activeURLFormat}
+        >
           Paste
         </Button>
       </ButtonGroup>

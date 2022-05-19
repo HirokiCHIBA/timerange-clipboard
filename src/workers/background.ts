@@ -1,6 +1,7 @@
 import { ToastManager } from '../components/Toast'
 import { defaultConfigYaml, parseYamlConfigV1 } from '../lib/config'
 import { store, actions } from '../lib/state'
+import { RuntimeMessage, ToastPayload } from '../lib/types'
 import {
   applyTimeRange,
   displayTimeRange,
@@ -144,5 +145,18 @@ chrome.windows.onFocusChanged.addListener(() => {
     store.dispatch(actions.setActiveTab(tab))
   })
 })
+
+// relay toast message from popup
+chrome.runtime.onMessage.addListener(
+  (message: RuntimeMessage, _, sendResponse) => {
+    if (message.type == 'toast') {
+      const payload = message.payload as ToastPayload
+      toastManager.notify(payload.tab, payload.props, true)
+      sendResponse(true)
+      return
+    }
+    sendResponse(false)
+  }
+)
 
 export {}

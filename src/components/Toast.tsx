@@ -1,13 +1,10 @@
-import { CSSProperties } from 'react'
+import { CSSProperties, useMemo } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-
-export type ToastProps = {
-  title: string
-  message?: string
-  contextMessage?: string
-}
+import { ToastProps } from '../lib/types'
 
 const Toast: React.FC<ToastProps> = ({ title, message, contextMessage }) => {
+  const logoUrl = useMemo(() => chrome.runtime.getURL('assets/logo.svg'), [])
+
   return (
     <div style={mainStyle} id="main">
       <style>{globalStyle}</style>
@@ -22,8 +19,6 @@ const Toast: React.FC<ToastProps> = ({ title, message, contextMessage }) => {
     </div>
   )
 }
-
-const logoUrl = chrome.runtime.getURL('assets/logo.svg')
 
 const mainStyle: CSSProperties = {
   position: 'fixed',
