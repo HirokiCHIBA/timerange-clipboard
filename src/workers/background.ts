@@ -55,12 +55,18 @@ store.subscribe(() => {
 const toastManager = new ToastManager()
 const toastPropsUnsupported = { title: 'Unsupported page' }
 const toastPropsEmpty = { title: 'Empty clipboard' }
+const toastPropsNoTimeRange = { title: 'No timerange parsed' }
 
 // functions for keyboard shortcuts
 const doCopy = () => {
   const s = store.getState()
+  if (!s.activeTab) return
+  if (!s.activeURLFormat) {
+    toastManager.notify(s.activeTab, toastPropsUnsupported)
+    return
+  }
   if (!s.activeTimeRange) {
-    s.activeTab && toastManager.notify(s.activeTab, toastPropsUnsupported)
+    toastManager.notify(s.activeTab, toastPropsNoTimeRange)
     return
   }
   const toastProps = {
