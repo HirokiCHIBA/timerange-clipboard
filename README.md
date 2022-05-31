@@ -14,7 +14,7 @@ This makes it easier to go back and forth between multiple monitoring tools with
 
 ## Usage
 
-The icon of this extension will be colored when you visit websites where this extension supports copy and paste of time ranges. Click on the icon to open the popup and click on the Copy or Paste button.
+The icon of this extension will be colored when you visit websites where this extension supports copy and paste of time ranges. Click on the icon to open the popup and click on the Copy or Paste button. Keyboard shortcuts for Copy/Paste are also available.
 
 <div align="center">
 <img src="https://raw.githubusercontent.com/HirokiCHIBA/timerange-clipboard/main/assets/store/screenshot1.png" alt="screenshot" width="600">
@@ -32,7 +32,6 @@ Note: The providers of these websites are not affiliated with this extension. Pl
 
 ## Future works
 
-- Support for shortcuts
 - Support for time range representations other than URL query parameters
 - Support for relative time representations that are not timestamps (e.g. from=now-1h&to=now)
 - Support for a non-developer friendly configuration UI
