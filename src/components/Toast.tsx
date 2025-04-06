@@ -125,9 +125,10 @@ export class ToastManager {
     chrome.tabs.onUpdated.addListener(this.onTabUpdate)
   }
 
-  notify = (tab: chrome.tabs.Tab, props: ToastProps, onLoad = false): void => {
+  notify = async (tab: chrome.tabs.Tab, props: ToastProps): Promise<void> => {
     if (!tab.id) return
-    if (onLoad) {
+    const currentInfo = await chrome.tabs.get(tab.id)
+    if (currentInfo.status == 'loading') {
       this.notifyOnLoad(tab.id, props)
     } else {
       this.notifyImmediately(tab.id, props)
