@@ -1,7 +1,6 @@
-const axios = require('axios')
 const frontPackages = require('./.next/oss-licenses-front.json')
 
-const licenseWhitelist = ['MIT', '0BSD', 'BSD-3-Clause']
+const licenseWhitelist = ['MIT', '0BSD', 'BSD-3-Clause', 'BSD-2-Clause', 'ISC']
 const licenseOverrides = [
   {
     "namePrefix": "@chakra-ui",
@@ -22,6 +21,10 @@ const licenseOverrides = [
   {
     "namePrefix": "toggle-selection",
     "licenseUrl": "https://raw.githubusercontent.com/sudodoki/toggle-selection/gh-pages/LICENSE"
+  },
+  {
+    "namePrefix": "@uiw/react-textarea-code-editor",
+    "licenseUrl": "https://raw.githubusercontent.com/uiwjs/react-textarea-code-editor/main/LICENSE"
   }
 ]
 
@@ -45,9 +48,16 @@ const genThirdPartyNotices = async packages => {
   const added = packages.filter(p => !frontPackages.some((fp) => fp.name === p.name))
   const all = frontPackages.concat(added)
   const overrides = await Promise.all(licenseOverrides.map(async e => {
-    const response = await axios.get(e.licenseUrl)
-    e["licenseText"] = response.data
-    return e
+    try {
+      const response = await fetch(e.licenseUrl);
+      if (!response.ok) {
+        throw new Error(`failed to fetch ${e.licenseUrl}: ${response.statusText}`);
+      }
+      e["licenseText"] = await response.text();
+    } catch (error) {
+      console.error(`failed to fetch license for ${e.namePrefix}:`, error);
+    }
+    return e;
   }))
   return tpnHeader + all.map(p => {
     const override = overrides.find(e => p.name.startsWith(e.namePrefix))
