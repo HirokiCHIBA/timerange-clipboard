@@ -81,6 +81,7 @@ const ConfigTextEditor: React.FC<Props> = ({ configYaml, onSubmit }) => {
             fontFamily:
               'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
           }}
+          data-color-mode="light"
           onChange={onChangeText}
         />
         <Button
@@ -144,6 +145,7 @@ const ConfigTextEditor: React.FC<Props> = ({ configYaml, onSubmit }) => {
             fontFamily:
               'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
           }}
+          data-color-mode="light"
           onChange={onChangeText}
         />
         <Text>
@@ -176,6 +178,7 @@ const ConfigTextEditor: React.FC<Props> = ({ configYaml, onSubmit }) => {
               fontFamily:
                 'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
             }}
+            data-color-mode="light"
             onChange={onChangeText}
           />
         </details>

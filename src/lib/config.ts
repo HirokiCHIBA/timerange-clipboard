@@ -171,6 +171,8 @@ urlFormats:
     paramSet:
       - key: fullscreen_paused
         value: 'true'
+      - key: fullscreen_refresh_mode
+        value: 'paused'
 
   # Datadog Dashboard, Datadog Monitor Status
   - urlWildcard: '*.datadoghq.com*from_ts=*'
@@ -180,6 +182,8 @@ urlFormats:
     paramSet:
       - key: live
         value: 'false'
+      - key: refresh_mode
+        value: 'paused'
 
   # Datadog APM
   - urlWildcard: '*.datadoghq.com*start=*'

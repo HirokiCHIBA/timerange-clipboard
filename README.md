@@ -42,7 +42,7 @@ Note: There is no guarantee that these will be implemented.
 
 ### Requirements
 
-* Node.js v16
+* Node.js v18
 
 ### setup
 

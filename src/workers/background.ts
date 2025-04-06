@@ -62,11 +62,11 @@ const doCopy = () => {
   const s = store.getState()
   if (!s.activeTab) return
   if (!s.activeURLFormat) {
-    toastManager.notify(s.activeTab, toastPropsUnsupported)
+    void toastManager.notify(s.activeTab, toastPropsUnsupported)
     return
   }
   if (!s.activeTimeRange) {
-    toastManager.notify(s.activeTab, toastPropsNoTimeRange)
+    void toastManager.notify(s.activeTab, toastPropsNoTimeRange)
     return
   }
   const toastProps = {
@@ -82,11 +82,11 @@ const doPaste = () => {
   const s = store.getState()
   if (!s.activeTab) return
   if (!s.activeURLFormat) {
-    toastManager.notify(s.activeTab, toastPropsUnsupported)
+    void toastManager.notify(s.activeTab, toastPropsUnsupported)
     return
   }
   if (!s.clippedTimeRange) {
-    toastManager.notify(s.activeTab, toastPropsEmpty)
+    void toastManager.notify(s.activeTab, toastPropsEmpty)
     return
   }
   const toastProps = {
@@ -96,7 +96,7 @@ const doPaste = () => {
   }
   void applyTimeRange(s.activeTab, s.clippedTimeRange, s.activeURLFormat).then(
     (tab) => {
-      tab && toastManager.notify(tab, toastProps, true)
+      tab && toastManager.notify(tab, toastProps)
     }
   )
 }
@@ -157,7 +157,7 @@ chrome.runtime.onMessage.addListener(
   (message: RuntimeMessage, _, sendResponse) => {
     if (message.type == 'toast') {
       const payload = message.payload as ToastPayload
-      toastManager.notify(payload.tab, payload.props, true)
+      void toastManager.notify(payload.tab, payload.props)
       sendResponse(true)
       return
     }
