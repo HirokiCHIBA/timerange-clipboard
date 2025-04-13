@@ -7,7 +7,7 @@ import {
   TriangleUpIcon,
 } from '@chakra-ui/icons'
 import { Box, Center, Flex, Spacer, Stack, Text } from '@chakra-ui/layout'
-import React, { useCallback, useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RuntimeMessage } from '../lib/types'
 import { parseYamlConfigV1, TimeDisplayOptions } from '../lib/config'
@@ -20,6 +20,7 @@ import {
   displayTimeRange,
   displayTimeZone,
 } from '../lib/utils'
+import render from './_app'
 
 const Popup = (): JSX.Element => {
   const dispatch = useDispatch()
@@ -175,4 +176,4 @@ const Popup = (): JSX.Element => {
   )
 }
 
-export default Popup
+render(<Popup />)
