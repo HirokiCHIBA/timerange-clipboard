@@ -13,22 +13,12 @@ import {
   HStack,
   Collapse,
 } from '@chakra-ui/react'
-import React, { ChangeEvent, useCallback, useState } from 'react'
+import { ChangeEvent, useCallback, useState } from 'react'
 import { configSpec, defaultConfigYaml, parseYamlConfigV1 } from '../lib/config'
-import dynamic, { Loader } from 'next/dynamic'
 
-import '@uiw/react-textarea-code-editor/dist.css'
-import { TextareaCodeEditorProps } from '@uiw/react-textarea-code-editor'
+import CodeEditor from '@uiw/react-textarea-code-editor'
 import { ZodError } from 'zod'
 import { YAMLException } from 'js-yaml'
-
-const CodeEditor: React.ComponentType<TextareaCodeEditorProps> = dynamic(
-  (() =>
-    import('@uiw/react-textarea-code-editor').then(
-      (mod) => mod.default
-    )) as Loader<TextareaCodeEditorProps>,
-  { ssr: false }
-)
 
 type Props = {
   configYaml: string
