@@ -66,7 +66,9 @@ module.exports = (env, argv) => {
         }),
       ],
       splitChunks: {
-        chunks: 'all',
+        chunks(chunk) {
+          return chunk.name !== 'background';
+        },
       },
     },
     plugins: [
@@ -75,6 +77,9 @@ module.exports = (env, argv) => {
         additionalFiles: {
           'THIRD-PARTY-NOTICES.txt': genThirdPartyNotices,
         },
+        licenseOverrides: {
+          '@pandacss/is-valid-prop@0.53.6': 'MIT'
+        }
       }),
       ...Object.keys(pages).map(
         (page) =>

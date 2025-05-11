@@ -3,7 +3,7 @@ import {
   Container,
   Heading,
   VStack,
-  StackDivider,
+  StackSeparator,
   Link,
   Flex,
   Box,
@@ -18,7 +18,7 @@ import render from './_app'
 
 // type Mode = 'form' | 'text'
 
-const Options = (): JSX.Element => {
+const Options = (): React.JSX.Element => {
   const [configYaml, setConfigYaml] = useState<string>()
   // const [mode] = useState<Mode>('text')
 
@@ -40,25 +40,23 @@ const Options = (): JSX.Element => {
   }, [])
 
   return (
-    <Container maxW="container.lg" fontSize="md">
-      <VStack align="stretch" divider={<StackDivider borderColor="gray.200" />}>
-        <VStack margin="20px 0">
-          <Heading as="h1">Timerange Clipboard</Heading>
+    <Container maxW="5xl" fontSize="md" py={2}>
+      <VStack align="stretch" separator={<StackSeparator borderColor="gray.200" />}>
+        <VStack my={4}>
+          <Heading as="h1" size="4xl">Timerange Clipboard</Heading>
           <Text>Version: {Version}</Text>
         </VStack>
-        <Box margin="0 0 10px">
-          {/* {mode == 'form'
-            ? configYaml && (
-                <ConfigFormEditor configYaml={configYaml} onSubmit={onSubmit} />
-              )
-            : configYaml && (
-                <ConfigTextEditor configYaml={configYaml} onSubmit={onSubmit} />
-              )} */}
-          {configYaml && (
-            <ConfigTextEditor configYaml={configYaml} onSubmit={onSubmit} />
-          )}
-        </Box>
-        <Flex margin="10px 0 20px" alignItems="center">
+        {/* {mode == 'form'
+          ? configYaml && (
+              <ConfigFormEditor configYaml={configYaml} onSubmit={onSubmit} />
+            )
+          : configYaml && (
+              <ConfigTextEditor configYaml={configYaml} onSubmit={onSubmit} />
+            )} */}
+        {configYaml && (
+          <ConfigTextEditor configYaml={configYaml} onSubmit={onSubmit} />
+        )}
+        <Flex alignItems="center" my={2}>
           <Box>
             <Text fontSize="xs">&copy; 2022 Hiroki Chiba</Text>
           </Box>

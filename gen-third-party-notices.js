@@ -1,13 +1,5 @@
-const licenseWhitelist = ['MIT', '0BSD', 'BSD-3-Clause', 'BSD-2-Clause', 'ISC']
+const licenseWhitelist = ['MIT', '0BSD', 'BSD-3-Clause', 'BSD-2-Clause', 'ISC', 'Apache-2.0']
 const licenseOverrides = [
-  {
-    "namePrefix": "@chakra-ui",
-    "licenseUrl": "https://raw.githubusercontent.com/chakra-ui/chakra-ui/main/LICENSE"
-  },
-  {
-    "namePrefix": "toggle-selection",
-    "licenseUrl": "https://raw.githubusercontent.com/sudodoki/toggle-selection/gh-pages/LICENSE"
-  },
   {
     "namePrefix": "@uiw/react-textarea-code-editor",
     "licenseUrl": "https://raw.githubusercontent.com/uiwjs/react-textarea-code-editor/main/LICENSE"

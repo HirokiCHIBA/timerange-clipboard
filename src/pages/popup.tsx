@@ -1,12 +1,11 @@
-import { Button, ButtonGroup, IconButton } from '@chakra-ui/button'
+import { Button, Group, Box, Center, Flex, Spacer, Stack, Text } from '@chakra-ui/react'
 import {
-  DeleteIcon,
-  SettingsIcon,
-  TimeIcon,
-  TriangleDownIcon,
-  TriangleUpIcon,
-} from '@chakra-ui/icons'
-import { Box, Center, Flex, Spacer, Stack, Text } from '@chakra-ui/layout'
+  BsFillTrash3Fill,
+  BsFillGearFill,
+  BsClock,
+  BsCaretDownFill,
+  BsCaretUpFill,
+} from 'react-icons/bs'
 import { useCallback, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RuntimeMessage } from '../lib/types'
@@ -22,7 +21,7 @@ import {
 } from '../lib/utils'
 import render from './_app'
 
-const Popup = (): JSX.Element => {
+const Popup = (): React.JSX.Element => {
   const dispatch = useDispatch()
   const activeTab = useSelector<AppState, chrome.tabs.Tab | null>(
     (state) => state.activeTab
@@ -104,7 +103,7 @@ const Popup = (): JSX.Element => {
 
   return (
     <Box w="450px">
-      <Flex m="10px" border="1px" borderRadius="base" borderColor="green.600">
+      <Flex m="10px" borderWidth="1px" borderRadius="md" borderColor="green.600" overflow="hidden">
         <Center fontSize="xs" w="4rem" bgColor="green.600" color="white">
           Active
         </Center>
@@ -114,25 +113,25 @@ const Popup = (): JSX.Element => {
             : '-'}
         </Center>
       </Flex>
-      <ButtonGroup m="10px" d="flex">
+      <Group m="10px" display="flex">
         <Button
           onClick={doCopy}
-          leftIcon={<TriangleDownIcon />}
           flex="1"
+          variant="subtle"
           disabled={!activeTimeRange}
         >
-          Copy
+          <BsCaretDownFill /> Copy
         </Button>
         <Button
           onClick={doPaste}
-          leftIcon={<TriangleUpIcon />}
           flex="1"
+          variant="subtle"
           disabled={!clippedTimeRange || !activeTab || !activeURLFormat}
         >
-          Paste
+          <BsCaretUpFill /> Paste
         </Button>
-      </ButtonGroup>
-      <Flex m="10px" border="1px" borderRadius="base" borderColor="blue.600">
+      </Group>
+      <Flex m="10px" borderWidth="1px" borderRadius="md" borderColor="blue.600" overflow="hidden">
         <Center fontSize="xs" w="4rem" bgColor="blue.600" color="white">
           Clipped
         </Center>
@@ -143,34 +142,35 @@ const Popup = (): JSX.Element => {
         </Center>
       </Flex>
       <Flex m="10px" alignItems="center">
-        <Stack spacing={0}>
+        <Stack gap={0}>
           <Text display="inline-flex" alignItems="center">
-            <TimeIcon mr={1} />
+            <BsClock style={{ marginRight: '0.25rem' }}/>
             {displayTimeZone(activeTimeDisplayOptions)}
           </Text>
           <Text>Timerange Clipboard v{Version}</Text>
         </Stack>
         <Spacer />
-        <ButtonGroup>
-          <IconButton
-            icon={<SettingsIcon />}
+        <Group>
+          <Button
             size="sm"
             variant="outline"
             aria-label="Setting"
             onClick={() => {
               chrome.runtime.openOptionsPage()
             }}
-          />
+          >
+            <BsFillGearFill />
+          </Button>
           <Button
             onClick={doClear}
-            leftIcon={<DeleteIcon />}
             size="sm"
-            colorScheme="blue"
+            colorPalette="blue"
+            borderColor="blue.600"
             variant="outline"
           >
-            Clear
+            <BsFillTrash3Fill /> Clear
           </Button>
-        </ButtonGroup>
+        </Group>
       </Flex>
     </Box>
   )

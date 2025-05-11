@@ -1,4 +1,4 @@
-import { CheckIcon } from '@chakra-ui/icons'
+import { BsCheckLg } from 'react-icons/bs'
 import {
   Button,
   Heading,
@@ -6,12 +6,8 @@ import {
   Text,
   Link,
   Alert,
-  AlertDescription,
-  AlertIcon,
-  AlertTitle,
   Code,
   HStack,
-  Collapse,
 } from '@chakra-ui/react'
 import { ChangeEvent, useCallback, useState } from 'react'
 import { configSpec, defaultConfigYaml, parseYamlConfigV1 } from '../lib/config'
@@ -59,7 +55,7 @@ const ConfigTextEditor: React.FC<Props> = ({ configYaml, onSubmit }) => {
   return (
     <VStack align="stretch">
       <VStack align="stretch">
-        <Heading as="h2" size="md" margin="10px 0">
+        <Heading as="h2" size="xl" my={1}>
           Config Editor
         </Heading>
         <CodeEditor
@@ -75,53 +71,46 @@ const ConfigTextEditor: React.FC<Props> = ({ configYaml, onSubmit }) => {
           onChange={onChangeText}
         />
         <Button
-          leftIcon={<CheckIcon />}
           size="md"
+          variant="subtle"
           onClick={onApply}
           disabled={!edited}
         >
-          Save
+          <BsCheckLg /> Save
         </Button>
-        <Collapse in={saved && !edited} animateOpacity>
-          <Alert status="success">
-            <AlertIcon />
-            <AlertTitle mr={2}>Saved!</AlertTitle>
-          </Alert>
-        </Collapse>
-        <Collapse in={yamlException !== null} animateOpacity>
-          {yamlException && (
-            <Alert status="error">
-              <VStack align="stretch">
-                <HStack>
-                  <AlertIcon marginRight="4px" />
-                  <AlertTitle>YAML Format Error!</AlertTitle>
-                  <AlertDescription>{yamlException.reason}</AlertDescription>
-                </HStack>
-                <pre style={{ fontSize: '0.8em' }}>
-                  {yamlException.mark.snippet}
-                </pre>
-              </VStack>
-            </Alert>
-          )}
-        </Collapse>
-        <Collapse in={zodError !== null} animateOpacity>
-          <VStack>
-            {zodError &&
-              zodError.errors.map((error) => (
-                <Alert status="error" key={error.message}>
-                  <AlertIcon />
-                  <AlertTitle mr={2}>Spec Error!</AlertTitle>
-                  <AlertDescription>
-                    {error.message}:{' '}
-                    <Code bgColor="red.200">{error.path.join('.')}</Code>
-                  </AlertDescription>
-                </Alert>
-              ))}
-          </VStack>
-        </Collapse>
+        {saved && !edited && (
+          <Alert.Root status="success">
+            <Alert.Indicator />
+            <Alert.Title>Saved!</Alert.Title>
+          </Alert.Root>
+        )}
+        {yamlException && (
+          <Alert.Root status="error">
+            <VStack align="stretch">
+              <HStack>
+                <Alert.Indicator />
+                <Alert.Title>YAML Format Error!</Alert.Title>
+                <Alert.Description>{yamlException.reason}</Alert.Description>
+              </HStack>
+              <pre style={{ fontSize: '0.8em' }}>
+                {yamlException.mark.snippet}
+              </pre>
+            </VStack>
+          </Alert.Root>
+        )}
+        {zodError && zodError.errors.map((error) => (
+          <Alert.Root status="error" key={error.message}>
+            <Alert.Indicator />
+            <Alert.Title>Spec Error!</Alert.Title>
+            <Alert.Description>
+              {error.message}:{' '}
+              <Code bgColor="red.200">{error.path.join('.')}</Code>
+            </Alert.Description>
+          </Alert.Root>
+        ))}
       </VStack>
       <VStack align="stretch">
-        <Heading as="h2" size="md" margin="10px 0">
+        <Heading as="h2" size="xl" my={1}>
           Config Spec
         </Heading>
         <CodeEditor
@@ -129,7 +118,6 @@ const ConfigTextEditor: React.FC<Props> = ({ configYaml, onSubmit }) => {
           value={configSpec}
           language="yaml"
           style={{
-            margin: '10px 0',
             fontSize: '0.8rem',
             backgroundColor: '#f5f5f5',
             fontFamily:
@@ -142,7 +130,6 @@ const ConfigTextEditor: React.FC<Props> = ({ configYaml, onSubmit }) => {
           Moment.js tokens:{' '}
           <Link
             href="https://momentjs.com/docs/#/parsing/string-format/"
-            isExternal
           >
             https://momentjs.com/docs/#/parsing/string-format/
           </Link>
@@ -150,7 +137,6 @@ const ConfigTextEditor: React.FC<Props> = ({ configYaml, onSubmit }) => {
           Moment.js duration unit keys:{' '}
           <Link
             href="https://momentjs.com/docs/#/durations/creating/"
-            isExternal
           >
             https://momentjs.com/docs/#/durations/creating/
           </Link>
@@ -162,7 +148,7 @@ const ConfigTextEditor: React.FC<Props> = ({ configYaml, onSubmit }) => {
             value={defaultConfigYaml}
             language="yaml"
             style={{
-              margin: '10px 0',
+              margin: '0.5rem 0',
               fontSize: '0.8rem',
               backgroundColor: '#f5f5f5',
               fontFamily:
