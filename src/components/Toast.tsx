@@ -138,7 +138,7 @@ export class ToastManager {
   private notifyImmediately = (tabId: number, props: ToastProps) => {
     chrome.scripting.executeScript(
       { target: { tabId }, ...generateFuncArgs(props) },
-      undefined
+      () => {}
     )
   }
 
