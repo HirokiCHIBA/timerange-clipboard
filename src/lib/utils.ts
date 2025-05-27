@@ -10,7 +10,7 @@ const regExpEscape = (s: string): string =>
 export const Version =
   typeof chrome !== 'undefined' && chrome.runtime
     ? chrome.runtime.getManifest().version
-    : '0.0.0'
+    : require('../../package/manifest.json').version
 
 export type TimeRange = {
   start: number

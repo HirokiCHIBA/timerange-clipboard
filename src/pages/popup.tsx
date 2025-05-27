@@ -19,7 +19,6 @@ import {
   displayTimeRange,
   displayTimeZone,
 } from '../lib/utils'
-import render from './_app'
 
 const Popup = (): React.JSX.Element => {
   const dispatch = useDispatch()
@@ -176,4 +175,4 @@ const Popup = (): React.JSX.Element => {
   )
 }
 
-render(<Popup />)
+export default Popup
