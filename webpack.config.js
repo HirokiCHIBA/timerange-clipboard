@@ -1,37 +1,38 @@
 const path = require('path')
-const glob = require('glob')
 const TerserPlugin = require('terser-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const MomentLocalesPlugin = require('moment-locales-webpack-plugin')
 const LicensePlugin = require('webpack-license-plugin')
+const VirtualModulesPlugin = require('webpack-virtual-modules')
 
-const genThirdPartyNotices = require('./gen-third-party-notices')
+const { PageModules, ThirdPartiyNotices } = require('./webpack.utils.js')
 
-module.exports = (env, argv) => {
-  const pageDir = './src/pages'
-  const pages = Object.fromEntries(
-    glob
-      .sync('**/*.tsx', {
-        cwd: pageDir,
-        ignore: '**/_*.tsx',
-      })
-      .map((key) => [key.replace(/\.tsx/, ''), path.resolve(pageDir, key)])
-  )
-  const entries = {
-    background: './src/workers/background.ts',
-    ...pages,
+const OUTPUT_DIR = 'package/dist'
+const INTER_DIR = '.build'
+
+const LICENSE_ALLOW_LIST = ['MIT', '0BSD', 'BSD-3-Clause', 'BSD-2-Clause', 'ISC', 'Apache-2.0']
+const LICENSE_TYPE_OVERRIDES = {
+  '@pandacss/is-valid-prop@0.53.6': 'MIT',
+}
+const LICENSE_TEXT_OVERRIDES = [
+  {
+    "namePrefix": "@uiw/react-textarea-code-editor",
+    "textUrl": "https://raw.githubusercontent.com/uiwjs/react-textarea-code-editor/main/LICENSE",
+  },
+]
+
+module.exports = (_env, argv) => {
+  const pageModules = new PageModules('src/pages')
+
+  const licenseCommonConfig = {
+    licenseOverrides: LICENSE_TYPE_OVERRIDES,
+    unacceptableLicenseTest: (license) => !LICENSE_ALLOW_LIST.includes(license),
   }
 
-  return {
+  const commonConfig = {
     mode: 'development',
-    entry: entries,
-    output: {
-      path: path.join(__dirname, 'package/dist'),
-      filename: (pathData) => {
-        return Object.hasOwn(entries, pathData.chunk.name) ? '[name].js' : 'chunks/[name].js'
-      },
-    },
+    devtool: argv.mode == 'production' ? undefined : 'inline-source-map',
     module: {
       rules: [
         {
@@ -53,43 +54,81 @@ module.exports = (env, argv) => {
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.json', '.css'],
     },
-    devtool: argv.mode == 'production' ? undefined : 'inline-source-map',
-    optimization: {
-      minimizer: [
-        new TerserPlugin({
-          extractComments: false,
-          terserOptions: {
-            format: {
-              comments: false,
+  }
+
+  return [
+    {
+      ...commonConfig,
+      name: "renderer",
+      target: 'node',
+      entry: pageModules.entries,
+      output: {
+        path: path.join(__dirname, INTER_DIR),
+        library: {
+          type: "commonjs2",
+          export: "default",
+        },
+      },
+      plugins: [
+        new CleanWebpackPlugin(),
+        new MomentLocalesPlugin(),
+        new VirtualModulesPlugin(pageModules.getRendererModules()),
+        new LicensePlugin({
+          ...licenseCommonConfig,
+          outputFilename: 'licenses.renderer.json',
+        })
+      ]
+    },
+    {
+      ...commonConfig,
+      name: "browser",
+      dependencies: ['renderer'],
+      entry: {
+        background: './src/workers/background.ts',
+        ...pageModules.entries,
+      },
+      output: {
+        path: path.join(__dirname, OUTPUT_DIR),
+        filename: (pathData) => {
+          return ['background', ...pageModules.keys].includes(pathData.chunk.name) ? '[name].js' : 'chunks/[name].js'
+        },
+      },
+      optimization: {
+        minimizer: [
+          new TerserPlugin({
+            extractComments: false,
+            terserOptions: {
+              format: {
+                comments: false,
+              },
+            },
+          }),
+        ],
+        splitChunks: {
+          chunks: (chunk) => chunk.name !== 'background',
+        },
+      },
+      plugins: [
+        new CleanWebpackPlugin(),
+        new MomentLocalesPlugin(),
+        new VirtualModulesPlugin(pageModules.getBrowserModules()),
+        ...pageModules.keys.map((key) => new HtmlWebpackPlugin({
+          title: '',
+          chunks: [key],
+          filename: `${key}.html`,
+          templateContent: () => require(path.resolve(INTER_DIR, `${key}.js`)),
+        })),
+        new LicensePlugin({
+          ...licenseCommonConfig,
+          outputFilename: path.join(path.relative(OUTPUT_DIR, INTER_DIR), 'licenses.browser.json'),
+          additionalFiles: {
+            'THIRD-PARTY-NOTICES.txt': (browser) => {
+              const renderer = require(path.resolve(INTER_DIR, 'licenses.renderer.json'))
+              return ThirdPartiyNotices.generate([...new Set([...renderer, ...browser])], LICENSE_TEXT_OVERRIDES)
             },
           },
         }),
       ],
-      splitChunks: {
-        chunks(chunk) {
-          return chunk.name !== 'background';
-        },
-      },
     },
-    plugins: [
-      new MomentLocalesPlugin(),
-      new LicensePlugin({
-        additionalFiles: {
-          'THIRD-PARTY-NOTICES.txt': genThirdPartyNotices,
-        },
-        licenseOverrides: {
-          '@pandacss/is-valid-prop@0.53.6': 'MIT'
-        }
-      }),
-      ...Object.keys(pages).map(
-        (page) =>
-          new HtmlWebpackPlugin({
-            title: '',
-            chunks: [page],
-            filename: `${page}.html`,
-          })
-      ),
-      new CleanWebpackPlugin(),
-    ],
-  }
+  ]
 }

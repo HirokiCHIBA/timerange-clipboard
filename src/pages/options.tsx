@@ -14,7 +14,6 @@ import ConfigTextEditor from '../components/ConfigTextEditor'
 // import ConfigFormEditor from '../components/ConfigFormEditor'
 import { defaultConfigYaml } from '../lib/config'
 import { Version } from '../lib/utils'
-import render from './_app'
 
 // type Mode = 'form' | 'text'
 
@@ -72,4 +71,4 @@ const Options = (): React.JSX.Element => {
   )
 }
 
-render(<Options />)
+export default Options
