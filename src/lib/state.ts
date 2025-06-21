@@ -40,12 +40,12 @@ const setConfig = (state: AppState, action: PayloadAction<ConfigV1>) => {
 
 const setActiveTab = (
   state: AppState,
-  action: PayloadAction<chrome.tabs.Tab>
+  action: PayloadAction<chrome.tabs.Tab>,
 ) => {
   state.activeTab = action.payload
   const [timeRange, urlFormat] = parseTimeRange(
     state.config.urlFormats,
-    action.payload
+    action.payload,
   )
   state.activeURLFormat = urlFormat
   state.activeTimeRange = timeRange
@@ -54,7 +54,7 @@ const setActiveTab = (
 
 const setClippedTimeRange = (
   state: AppState,
-  action: PayloadAction<TimeRange>
+  action: PayloadAction<TimeRange>,
 ) => {
   state.clippedTimeRange = action.payload
 }

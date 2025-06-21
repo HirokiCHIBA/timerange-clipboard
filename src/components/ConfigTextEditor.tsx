@@ -70,12 +70,7 @@ const ConfigTextEditor: React.FC<Props> = ({ configYaml, onSubmit }) => {
           data-color-mode="light"
           onChange={onChangeText}
         />
-        <Button
-          size="md"
-          variant="subtle"
-          onClick={onApply}
-          disabled={!edited}
-        >
+        <Button size="md" variant="subtle" onClick={onApply} disabled={!edited}>
           <BsCheckLg /> Save
         </Button>
         {saved && !edited && (
@@ -98,16 +93,17 @@ const ConfigTextEditor: React.FC<Props> = ({ configYaml, onSubmit }) => {
             </VStack>
           </Alert.Root>
         )}
-        {zodError && zodError.errors.map((error) => (
-          <Alert.Root status="error" key={error.message}>
-            <Alert.Indicator />
-            <Alert.Title>Spec Error!</Alert.Title>
-            <Alert.Description>
-              {error.message}:{' '}
-              <Code bgColor="red.200">{error.path.join('.')}</Code>
-            </Alert.Description>
-          </Alert.Root>
-        ))}
+        {zodError &&
+          zodError.errors.map((error) => (
+            <Alert.Root status="error" key={error.message}>
+              <Alert.Indicator />
+              <Alert.Title>Spec Error!</Alert.Title>
+              <Alert.Description>
+                {error.message}:{' '}
+                <Code bgColor="red.200">{error.path.join('.')}</Code>
+              </Alert.Description>
+            </Alert.Root>
+          ))}
       </VStack>
       <VStack align="stretch">
         <Heading as="h2" size="xl" my={1}>
@@ -128,16 +124,12 @@ const ConfigTextEditor: React.FC<Props> = ({ configYaml, onSubmit }) => {
         />
         <Text>
           Moment.js tokens:{' '}
-          <Link
-            href="https://momentjs.com/docs/#/parsing/string-format/"
-          >
+          <Link href="https://momentjs.com/docs/#/parsing/string-format/">
             https://momentjs.com/docs/#/parsing/string-format/
           </Link>
           <br />
           Moment.js duration unit keys:{' '}
-          <Link
-            href="https://momentjs.com/docs/#/durations/creating/"
-          >
+          <Link href="https://momentjs.com/docs/#/durations/creating/">
             https://momentjs.com/docs/#/durations/creating/
           </Link>
         </Text>

@@ -12,10 +12,10 @@ import {
 const manifest = chrome.runtime.getManifest()
 const activeIcons = manifest.icons
   ? Object.fromEntries(
-      Object.entries(manifest.icons).map((e) => {
+      Object.entries(manifest.icons as [string, string]).map((e) => {
         e[1] = chrome.runtime.getURL(e[1])
         return e
-      })
+      }),
     )
   : {}
 const inactiveIcons =
@@ -27,8 +27,8 @@ const inactiveIcons =
           (e) => {
             e[1] = chrome.runtime.getURL(e[1])
             return e
-          }
-        )
+          },
+        ),
       )
     : {}
 
@@ -45,7 +45,7 @@ store.subscribe(() => {
   const title = s.clippedTimeRange
     ? `${manifest.name}\nClipped: ${displayTimeRange(
         s.clippedTimeRange,
-        s.activeTimeDisplayOptions
+        s.activeTimeDisplayOptions,
       )} (${displayTimeZone(s.activeTimeDisplayOptions)})`
     : manifest.name
   void chrome.action.setTitle({ title })
@@ -75,7 +75,7 @@ const doCopy = () => {
     contextMessage: displayTimeZone(s.activeTimeDisplayOptions),
   }
   void chrome.storage.local.set({ timeRange: s.activeTimeRange }).then(() => {
-    s.activeTab && toastManager.notify(s.activeTab, toastProps)
+    if (s.activeTab) void toastManager.notify(s.activeTab, toastProps)
   })
 }
 const doPaste = () => {
@@ -96,8 +96,8 @@ const doPaste = () => {
   }
   void applyTimeRange(s.activeTab, s.clippedTimeRange, s.activeURLFormat).then(
     (tab) => {
-      tab && toastManager.notify(tab, toastProps)
-    }
+      if (tab) void toastManager.notify(tab, toastProps)
+    },
   )
 }
 
@@ -110,7 +110,9 @@ chrome.commands.onCommand.addListener((command) => {
 // sync state with chrome.storage
 chrome.storage.sync.get('configYaml', (item) => {
   if (item.configYaml) {
-    store.dispatch(actions.setConfig(parseYamlConfigV1(item.configYaml)))
+    store.dispatch(
+      actions.setConfig(parseYamlConfigV1(item.configYaml as string)),
+    )
   } else {
     store.dispatch(actions.setConfig(parseYamlConfigV1(defaultConfigYaml)))
     void chrome.storage.sync.set({ configYaml: defaultConfigYaml })
@@ -119,7 +121,9 @@ chrome.storage.sync.get('configYaml', (item) => {
 chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName == 'sync' && changes.configYaml) {
     store.dispatch(
-      actions.setConfig(parseYamlConfigV1(changes.configYaml.newValue))
+      actions.setConfig(
+        parseYamlConfigV1(changes.configYaml.newValue as string),
+      ),
     )
   }
 })
@@ -130,7 +134,7 @@ chrome.storage.local.get('timeRange', (item) => {
 chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName != 'local' || !changes.timeRange) return
   store.dispatch(
-    actions.setClippedTimeRange(changes.timeRange.newValue as TimeRange)
+    actions.setClippedTimeRange(changes.timeRange.newValue as TimeRange),
   )
 })
 
@@ -162,7 +166,7 @@ chrome.runtime.onMessage.addListener(
       return
     }
     sendResponse(false)
-  }
+  },
 )
 
 export {}

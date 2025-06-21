@@ -24,25 +24,32 @@ const Options = (): React.JSX.Element => {
   const init = useCallback(async () => {
     if (chrome.storage) {
       const item = await chrome.storage.sync.get('configYaml')
-      if (item.configYaml) setConfigYaml(item.configYaml)
+      if (item.configYaml) {
+        setConfigYaml(item.configYaml as string)
+      }
     } else {
       setConfigYaml(defaultConfigYaml)
     }
   }, [])
   useEffect(() => void init(), [])
 
-  const onSubmit = useCallback(async (c: string) => {
+  const onSubmit = useCallback((c: string) => {
     setConfigYaml(c)
     if (chrome.storage) {
-      await chrome.storage.sync.set({ configYaml: c })
+      void chrome.storage.sync.set({ configYaml: c })
     }
   }, [])
 
   return (
     <Container maxW="5xl" fontSize="md" py={2}>
-      <VStack align="stretch" separator={<StackSeparator borderColor="gray.200" />}>
+      <VStack
+        align="stretch"
+        separator={<StackSeparator borderColor="gray.200" />}
+      >
         <VStack my={4}>
-          <Heading as="h1" size="4xl">Timerange Clipboard</Heading>
+          <Heading as="h1" size="4xl">
+            Timerange Clipboard
+          </Heading>
           <Text>Version: {Version}</Text>
         </VStack>
         {/* {mode == 'form'

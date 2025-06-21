@@ -5,8 +5,8 @@ import { store } from '../lib/state'
 
 const theme = createSystem(defaultConfig, {
   globalCss: {
-    "body": {
-      minHeight: "auto",
+    body: {
+      minHeight: 'auto',
     },
   },
 })
