@@ -107,7 +107,7 @@ const generateShadowDOM = (html: string) => {
 }
 
 const generateFuncArgs = (
-  props: ToastProps
+  props: ToastProps,
 ): { func: (...args: string[]) => void; args: string[] } => {
   const html = renderToStaticMarkup(<Toast {...props} />)
   return {
@@ -136,10 +136,10 @@ export class ToastManager {
   }
 
   private notifyImmediately = (tabId: number, props: ToastProps) => {
-    chrome.scripting.executeScript(
-      { target: { tabId }, ...generateFuncArgs(props) },
-      () => {}
-    )
+    void chrome.scripting.executeScript({
+      target: { tabId },
+      ...generateFuncArgs(props),
+    })
   }
 
   private notifyOnLoad = (tabId: number, props: ToastProps) => {

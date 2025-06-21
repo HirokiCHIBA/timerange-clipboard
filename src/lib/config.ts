@@ -3,11 +3,11 @@ import { z } from 'zod'
 
 const validateDateTimeFormatArgs = (
   locale?: string | string[],
-  options?: Intl.DateTimeFormatOptions
+  options?: Intl.DateTimeFormatOptions,
 ): boolean => {
   try {
     new Intl.DateTimeFormat(locale, options)
-  } catch (e) {
+  } catch {
     return false
   }
   return true
@@ -23,7 +23,7 @@ export const TimeDisplayOptions = z
       .string()
       .refine(
         (v) => validateDateTimeFormatArgs([], { timeZone: v }),
-        'Unsupported time zone'
+        'Unsupported time zone',
       )
       .optional()
       .nullable(),
@@ -74,7 +74,7 @@ export const URLFormat = z
     }
     if (o.paramStart && o.paramEnd && o.paramDuration) {
       msg(
-        'Only two of `paramStart`, `paramEnd`, and `paramDuration` can be specified'
+        'Only two of `paramStart`, `paramEnd`, and `paramDuration` can be specified',
       )
     }
     if (
@@ -89,7 +89,7 @@ export const URLFormat = z
       o.paramDuration.unit
     ) {
       msg(
-        '`paramDuration.unit` can not be specified if `timeOneSecond` is specified'
+        '`paramDuration.unit` can not be specified if `timeOneSecond` is specified',
       )
     }
   })

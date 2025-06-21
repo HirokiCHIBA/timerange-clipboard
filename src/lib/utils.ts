@@ -10,7 +10,8 @@ const regExpEscape = (s: string): string =>
 export const Version =
   typeof chrome !== 'undefined' && chrome.runtime
     ? chrome.runtime.getManifest().version
-    : require('../../package/manifest.json').version
+    : // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-member-access
+      ((require('../../package/manifest.json').version as string) ?? '0.0.0')
 
 export type TimeRange = {
   start: number
@@ -19,7 +20,7 @@ export type TimeRange = {
 
 export const parseTimeRange = (
   formats: URLFormat[],
-  tab: chrome.tabs.Tab
+  tab: chrome.tabs.Tab,
 ): [TimeRange | null, URLFormat | null] => {
   if (!tab.url) return [null, null]
   const url = new URL(tab.url)
@@ -67,7 +68,8 @@ export const parseTimeRange = (
           ? moment.duration(url.searchParams.get(format.paramDuration))
           : moment.duration(
               url.searchParams.get(format.paramDuration.key),
-              format.paramDuration.unit as moment.unitOfTime.DurationConstructor
+              format.paramDuration
+                .unit as moment.unitOfTime.DurationConstructor,
             )
     }
   }
@@ -92,7 +94,7 @@ export const parseTimeRange = (
 export const applyTimeRange = async (
   tab: chrome.tabs.Tab,
   range: TimeRange,
-  format: URLFormat
+  format: URLFormat,
 ): Promise<chrome.tabs.Tab | void> => {
   if (!tab.url || !tab.id) return
   const url = new URL(tab.url)
@@ -149,13 +151,13 @@ const displayDateTimeFormat = (opts: TimeDisplayOptions) => {
       timeZone: opts.timeZone !== null ? opts.timeZone : undefined,
       dateStyle: 'medium',
       timeStyle: 'short',
-    }
+    },
   )
 }
 
 export const displayTimeRange = (
   range: TimeRange,
-  opts: TimeDisplayOptions
+  opts: TimeDisplayOptions,
 ): string => {
   const format = displayDateTimeFormat(opts)
   const start = format.format(range.start)
