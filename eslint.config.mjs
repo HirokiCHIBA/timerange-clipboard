@@ -7,7 +7,7 @@ import globals from 'globals'
 
 export default defineConfig(
   {
-    ignores: ['node_modules', 'package/dist', '.build'],
+    ignores: ['node_modules', 'package', '.build'],
   },
   {
     files: ['**/*.{js,mjs}'],

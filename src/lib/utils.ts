@@ -7,12 +7,6 @@ const wildcardToRegExp = (s: string): RegExp =>
 const regExpEscape = (s: string): string =>
   s.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&')
 
-export const Version =
-  typeof chrome !== 'undefined' && chrome.runtime
-    ? chrome.runtime.getManifest().version
-    : // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-member-access
-      ((require('../../package/manifest.json').version as string) ?? '0.0.0')
-
 export type TimeRange = {
   start: number
   end: number

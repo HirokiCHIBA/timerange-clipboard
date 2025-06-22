@@ -22,7 +22,6 @@ import { parseYamlConfigV1, TimeDisplayOptions } from '../lib/config'
 import { URLFormat } from '../lib/config'
 import { actions, AppState } from '../lib/state'
 import {
-  Version,
   TimeRange,
   applyTimeRange,
   displayTimeRange,
@@ -173,7 +172,7 @@ const Popup = (): React.JSX.Element => {
             <BsClock style={{ marginRight: '0.25rem' }} />
             {displayTimeZone(activeTimeDisplayOptions)}
           </Text>
-          <Text>Timerange Clipboard v{Version}</Text>
+          <Text>Timerange Clipboard v{VERSION}</Text>
         </Stack>
         <Spacer />
         <Group>

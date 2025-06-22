@@ -15,16 +15,16 @@
       "48": "assets/icon/inactive48.png",
       "128": "assets/icon/inactive128.png"
     },
-    "default_popup": "dist/popup.html"
+    "default_popup": "popup.html"
   },
   "web_accessible_resources": [{
     "resources": ["assets/*"],
     "matches": ["<all_urls>"]
   }],
   "background": {
-    "service_worker": "dist/background.js"
+    "service_worker": "background.js"
   },
-  "options_page": "dist/options.html",
+  "options_page": "options.html",
   "permissions": ["tabs", "storage", "activeTab", "scripting"],
   "commands": {
     "_execute_action": {

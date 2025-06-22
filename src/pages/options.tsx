@@ -13,7 +13,6 @@ import { useCallback, useEffect, useState } from 'react'
 import ConfigTextEditor from '../components/ConfigTextEditor'
 // import ConfigFormEditor from '../components/ConfigFormEditor'
 import { defaultConfigYaml } from '../lib/config'
-import { Version } from '../lib/utils'
 
 // type Mode = 'form' | 'text'
 
@@ -50,7 +49,7 @@ const Options = (): React.JSX.Element => {
           <Heading as="h1" size="4xl">
             Timerange Clipboard
           </Heading>
-          <Text>Version: {Version}</Text>
+          <Text>Version: {VERSION}</Text>
         </VStack>
         {/* {mode == 'form'
           ? configYaml && (
