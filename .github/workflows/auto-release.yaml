@@ -1,0 +1,132 @@
+name: Auto Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      current: ${{ steps.versions.outputs.current }}
+      is_changed: ${{ steps.checks.outputs.is_changed }}
+      is_release: ${{ steps.checks.outputs.is_release }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Fetch minimal history
+        run: git fetch --depth=2 origin main
+
+      - name: Get manifest versions
+        id: versions
+        run: |
+          PREV_VERSION=$(git show HEAD~1:manifest.json 2>/dev/null | jq -r '.version' || echo "")
+          CURR_VERSION=$(jq -r '.version' manifest.json 2>/dev/null || echo "")
+          echo "previous=$PREV_VERSION" >> $GITHUB_OUTPUT
+          echo "current=$CURR_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check version change and release flag
+        id: checks
+        run: |
+          CURR=${{ steps.versions.outputs.current }}
+          PREV=${{ steps.versions.outputs.previous }}
+          if [ "$PREV" = "$CURR" ]; then
+            echo "is_changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "is_changed=true" >> $GITHUB_OUTPUT
+          fi
+          if [[ "$CURR" =~ [-+] ]]; then
+            echo "is_release=false" >> $GITHUB_OUTPUT
+          else
+            echo "is_release=true" >> $GITHUB_OUTPUT
+          fi
+
+  bump:
+    runs-on: ubuntu-latest
+    needs: version
+    if: needs.version.outputs.is_changed == 'false'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Bump to next beta
+        run: |
+          BETA=$(node -e "const semver=require('semver'); console.log(semver.inc('${{ needs.version.outputs.current }}','prerelease','beta'))")
+          TAG=v$BETA
+          jq ".version = \"${BETA}\"" manifest.json > tmp.json && mv tmp.json manifest.json
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -am "chore: bump to ${BETA}"
+          git push origin main
+          git tag "$TAG"
+          git push origin "$TAG"
+
+  tag:
+    runs-on: ubuntu-latest
+    needs: version
+    if: needs.version.outputs.is_changed == 'true'
+
+    outputs:
+      name: ${{ steps.tag.outputs.name }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Tag version
+        id: tag
+        run: |
+          TAG=v${{ needs.version.outputs.current }}
+          git tag "$TAG"
+          git push origin "$TAG"
+          echo "name=$TAG" >> $GITHUB_OUTPUT
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [version, tag]
+    if: needs.version.outputs.is_release == 'true'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build artifact
+        id: build
+        run: |
+          npm run build
+          REPO="${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}"
+          ARTIFACT=$REPO-${{ needs.tag.outputs.name }}.zip
+          zip -r $ARTIFACT package
+          echo "artifact=$ARTIFACT" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ needs.tag.outputs.name }}" \
+            "${{ steps.build.outputs.artifact }}" \
+            --generate-notes \
+            --prerelease=false

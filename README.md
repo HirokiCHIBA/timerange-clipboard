@@ -67,10 +67,4 @@ npm run build
 ```sh
 npm run dev
 ```
-(Only dist/options works so far.)
-
-### Build zip file for publish
-
-```sh
-npm run publish
-```
+(Only options.html works so far.)

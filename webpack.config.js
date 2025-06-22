@@ -6,10 +6,12 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const MomentLocalesPlugin = require('moment-locales-webpack-plugin')
 const LicensePlugin = require('webpack-license-plugin')
 const VirtualModulesPlugin = require('webpack-virtual-modules')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
+const { DefinePlugin } = require('webpack')
 
 const { PageModules, ThirdPartiyNotices } = require('./webpack.utils.js')
 
-const OUTPUT_DIR = 'package/dist'
+const OUTPUT_DIR = 'package'
 const INTER_DIR = '.build'
 
 const LICENSE_ALLOW_LIST = [
@@ -37,6 +39,14 @@ module.exports = (_env, argv) => {
   const licenseCommonConfig = {
     licenseOverrides: LICENSE_TYPE_OVERRIDES,
     unacceptableLicenseTest: (license) => !LICENSE_ALLOW_LIST.includes(license),
+  }
+
+  const manifest = require('./manifest.json')
+  const versionOverride = process.env.CI
+    ? manifest.version
+    : manifest.version + '+local'
+  const definitions = {
+    VERSION: JSON.stringify(versionOverride),
   }
 
   const commonConfig = {
@@ -80,6 +90,7 @@ module.exports = (_env, argv) => {
       },
       plugins: [
         new CleanWebpackPlugin(),
+        new DefinePlugin(definitions),
         new MomentLocalesPlugin(),
         new VirtualModulesPlugin(pageModules.getRendererModules()),
         new LicensePlugin({
@@ -123,12 +134,26 @@ module.exports = (_env, argv) => {
       },
       plugins: [
         new CleanWebpackPlugin(),
+        new DefinePlugin(definitions),
+        new CopyWebpackPlugin({
+          patterns: [
+            { from: 'assets/dist/package', to: 'assets' },
+            {
+              from: 'manifest.json',
+              transform(buf) {
+                const manifest = JSON.parse(buf.toString('utf-8'))
+                manifest.version = versionOverride
+                return Buffer.from(JSON.stringify(manifest, null, 2), 'utf-8')
+              },
+            },
+          ],
+        }),
         new ESLintPlugin({
           fix: true,
           extensions: ['ts', 'tsx'],
           exclude: [
             'node_modules/**/*',
-            'package/dist/**/*',
+            'package/**/*',
             '.build/**/*',
             '.virtual/**/*',
           ],
