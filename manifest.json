@@ -1,8 +1,7 @@
-
 {
   "manifest_version": 3,
   "name": "Timerange Clipboard",
-  "version": "1.1.0",
+  "version": "1.1.1-beta.0",
   "description": "Extension to copy and paste URL parameters in any format representing time ranges.",
   "icons": {
     "16": "assets/icon/active16.png",
@@ -17,15 +16,26 @@
     },
     "default_popup": "popup.html"
   },
-  "web_accessible_resources": [{
-    "resources": ["assets/*"],
-    "matches": ["<all_urls>"]
-  }],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
   "background": {
     "service_worker": "background.js"
   },
   "options_page": "options.html",
-  "permissions": ["tabs", "storage", "activeTab", "scripting"],
+  "permissions": [
+    "tabs",
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
   "commands": {
     "_execute_action": {
       "suggested_key": "Alt+T",
