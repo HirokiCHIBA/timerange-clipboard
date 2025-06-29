@@ -172,7 +172,7 @@ const Popup = (): React.JSX.Element => {
             <BsClock style={{ marginRight: '0.25rem' }} />
             {displayTimeZone(activeTimeDisplayOptions)}
           </Text>
-          <Text>Timerange Clipboard v{VERSION}</Text>
+          <Text>{`Timerange Clipboard v${VERSION}`}</Text>
         </Stack>
         <Spacer />
         <Group>

@@ -1,4 +1,5 @@
 const path = require('path')
+const semver = require('semver')
 const ESLintPlugin = require('eslint-webpack-plugin')
 const TerserPlugin = require('terser-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
@@ -43,8 +44,8 @@ module.exports = (_env, argv) => {
 
   const manifest = require('./manifest.json')
   const versionOverride = process.env.CI
-    ? manifest.version
-    : manifest.version + '+local'
+    ? manifest.version_name
+    : manifest.version_name + '+local'
   const definitions = {
     VERSION: JSON.stringify(versionOverride),
   }
@@ -142,7 +143,8 @@ module.exports = (_env, argv) => {
               from: 'manifest.json',
               transform(buf) {
                 const manifest = JSON.parse(buf.toString('utf-8'))
-                manifest.version = versionOverride
+                manifest.version = semver.coerce(versionOverride).version
+                manifest.version_name = versionOverride
                 return Buffer.from(JSON.stringify(manifest, null, 2), 'utf-8')
               },
             },
