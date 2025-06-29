@@ -49,7 +49,7 @@ const Options = (): React.JSX.Element => {
           <Heading as="h1" size="4xl">
             Timerange Clipboard
           </Heading>
-          <Text>Version: {VERSION}</Text>
+          <Text>{`Version: ${VERSION}`}</Text>
         </VStack>
         {/* {mode == 'form'
           ? configYaml && (
