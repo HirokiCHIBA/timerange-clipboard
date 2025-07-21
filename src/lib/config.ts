@@ -185,6 +185,17 @@ urlFormats:
       - key: refresh_mode
         value: 'paused'
 
+  # Datadog Notebook
+  - urlWildcard: '*.datadoghq.com/notebook/*/*'
+    timeFormat: x
+    paramStart: start
+    paramDuration: 
+      key: range
+      unit: milliseconds
+    paramSet:
+      - key: live
+        value: 'false'
+
   # Datadog APM
   - urlWildcard: '*.datadoghq.com*start=*'
     timeFormat: x
