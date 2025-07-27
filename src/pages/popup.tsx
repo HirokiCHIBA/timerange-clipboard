@@ -15,7 +15,7 @@ import {
   BsCaretDownFill,
   BsCaretUpFill,
 } from 'react-icons/bs'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useSyncExternalStore } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RuntimeMessage } from '../lib/types'
 import { parseYamlConfigV1, TimeDisplayOptions } from '../lib/config'
@@ -170,7 +170,11 @@ const Popup = (): React.JSX.Element => {
         <Stack gap={0}>
           <Text display="inline-flex" alignItems="center">
             <BsClock style={{ marginRight: '0.25rem' }} />
-            {displayTimeZone(activeTimeDisplayOptions)}
+            {useSyncExternalStore(
+              () => () => {},
+              () => displayTimeZone(activeTimeDisplayOptions),
+              () => 'Default',
+            )}
           </Text>
           <Text>{`Timerange Clipboard v${VERSION}`}</Text>
         </Stack>
