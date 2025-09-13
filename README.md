@@ -3,8 +3,8 @@
 Timerange Clipboard
 </h1>
 
-A Chrome Extension to copy and paste URL parameters in any format representing time ranges.  
-This makes it easier to go back and forth between multiple monitoring tools with different timestamp formats (e.g. Datadog and Splunk).
+A Chrome extension that makes it easy to copy and paste time ranges in URLs between different web pages.  
+This extension allows time ranges to be converted into a format compatible with each web page. This helps compare information for the same time range across web pages with different timestamp formats (e.g. Datadog and CloudWatch).
 
 ## Install
 
@@ -21,18 +21,19 @@ The icon of this extension will be colored when you visit websites where this ex
 </div>
 
 ## Supported websites
-Any websites that represent time ranges on display as timestamps in two URL query parameters. You can add websites from the options page. The built-in preset supports:
+
+Any website that represents time ranges being displayed using either start and end timestamps, or one of them along with a duration, in its URL. The built-in preset supports:
 
 - Datadog
 - Splunk
 - Grafana
 - Lightstep
+- Cloudwatch
 
 Note: The providers of these websites are not affiliated with this extension. Please do not contact them about this extension.
 
 ## Future works
 
-- Support for time range representations other than URL query parameters
 - Support for relative time representations that are not timestamps (e.g. from=now-1h&to=now)
 - Support for a non-developer friendly configuration UI
 
@@ -54,6 +55,12 @@ npm install
 
 ```sh
 npm run lint
+```
+
+### Test
+
+```sh
+npm test
 ```
 
 ### Build

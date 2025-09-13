@@ -1,0 +1,89 @@
+# Version of config spec. Fixed value.
+configVersion: 1
+
+# (Optional) Options to display time in the UI. If omitted, the browser's default is used.
+# This setting can be overridden for each urlFormat by `urlFormats.*.timeDisplayOptions`.
+timeDisplayOptions:
+  locale: 'en-US' # Specify a string with a BCP 47 language tag.
+  timeZone: UTC   # Specify `UTC` or an IANA time zone name (e.g. `America/Los_Angeles`).
+
+# List of URL formats with timestamps. If multiple matches are found, the earliest one will be used.
+urlFormats:
+
+  - # URL with wildcards to use this format.
+    urlWildcard: '*.datadoghq.com*from_ts=*'
+
+    # Format of timestamps.
+    # Either `timeFormat` or `timeOneSecond` is required.
+    timeFormat: x           # Specify a format with Moment.js tokens described below.
+    timeOneSecond: 1000000  # Specify a number representing one second of timestamp.
+                            # e.g. 1000000 for a microsecond timestamp, 1000 for a millisecond timestamp
+
+    # (Optional) UTC offset of timestamps. 
+    # Integer minutes and hours, or strings such as `+00`, `+0000`, `+00:00`, and `Z` can be used.
+    # If `timeFormat` is not a Unix epoch timestamp and does not contain a UTC offset, timestamps are considered as
+    # local time by default. Also, if `timeFormat` contains a UTC offset, it is respected on "Copy", but the local
+    # time zone offset will be used on "Paste" by default. To use other time zone offsets, use `timeUtcOffset`.
+    # Note: If `timeUtcOffset` differs from offsets parsed from timestamps, `timeUtcOffset` takes precedence.
+    # e.g. 2025-08-28T22:07:42+0900 will be considered as 2025-08-28T22:07:42+0000 when `timeUtcOffset` is 0 even if
+    #      `timeFormat` is `YYYY-MM-DDTHH:mm:ssZ`.
+    timeUtcOffset: 0
+
+    # Query parameters indicating time ranges.
+    # Only two of `paramStart`, `paramEnd`, and `paramDuration` can be specified, and they cannot be specified
+    # together with `regexStart`, `regexEnd`, and `regexDuration`.
+    paramStart: from_ts   # Query parameter indicating start times of time ranges.
+    paramEnd: to_ts       # Query parameter indicating end times of time ranges.
+    paramDuration: range  # Query parameter indicating duration of time ranges.
+
+    # Regular expressions to identify time range strings from URLs.
+    # Only two of `regexStart`, `regexEnd`, and `regexDuration` can be specified, and they cannot be specified
+    # together with `paramStart`, `paramEnd`, and `paramDuration`.
+    # The entire matching string must be a timestamp or period string and some symbols need to be escaped as this
+    # config is written in YAML.
+    regexStart: (?<=from_ts=)[0-9]+   # RegExp pattern to identify start times of time ranges.
+    regexEnd: (?<=to_ts=)[0-9]+       # RegExp pattern to identify end times of time ranges.
+    regexDuration: (?<=range=)[0-9]+  # RegExp pattern to identify duration of time ranges.
+
+    # If the timestamp format is specified by `timeFormat`, durations are interpreted as a number of milliseconds
+    # by default. If it should be interpreted in other units, specify it as follows.
+    paramDuration:
+      key: range    # Query parameter key
+      unit: seconds # Unit of duration. Use Moment.js duration unit keys described below.
+    regexDuration:
+      regex: (?<=range=)[0-9]+  # RegExp pattern
+      unit: seconds             # Same as `paramDuration.unit`.
+
+    # (Optional) List of query parameters to be added to URLs on "Paste".
+    # This can be used together with `regex...`, but it might get overwritten by them.
+    paramSet:
+      - key: live
+        value: 'false'
+
+    # (Optional) List of query parameters to be removed to URLs on "Paste".
+    # This can be used together with `regex...`, but it might get overwritten by them.
+    paramDelete:
+      - sid
+
+    # (Optional) List of combinations of RegExp patterns and its replacements to be applied to URLs on "Paste".
+    # The entire matching string and all of matches will be replaced with the replacement string (`replace`).
+    # The replacement string can include `{{ start }}`, `{{ end }}`, and `{{ duration }}` to insert the
+    # corresponding timestamp or duration. Replacements are applied in the order they are specified.
+    # This can be used together with `param...`, but it might get overwritten by this.
+    regexReplace:
+      # Example of a simple replacement
+      - regex: live=[^&]+   # RegExp pattern to identify a part to be replaced.
+        replace: live=false # Replacement string.
+      # Example of deleting an unwanted part
+      - regex: sid=[^&]+
+        replace: ''
+      # Example of adding a needed, non-existing part
+      - regex: (?<=\?.*)(?<!from_ts=.*)$  # Use lookaround to specify the position to insert.
+        replace: '&from_ts={{ start }}'   # Use `{{ start }}` to insert a start timestamp.
+
+    # (Optional) Same as the root `timeDisplayOptions`.
+    # This setting is applied (merged with the root setting) only when a page matching this urlFormat is active.
+    # Leave empty or `null` for each property if you prefer to use the browser's default instead of the root setting.
+    timeDisplayOptions:
+      locale:               # Use the browser's default instead of the root setting `en-US`.
+      timeZone: Asia/Tokyo  # Use `Asia/Tokyo` instead of the root setting `UTC`.
