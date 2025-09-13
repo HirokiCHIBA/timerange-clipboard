@@ -69,10 +69,14 @@ module.exports = (_env, argv) => {
             },
           ],
         },
+        {
+          test: /\.(yaml)$/,
+          type: 'asset/source',
+        },
       ],
     },
     resolve: {
-      extensions: ['.ts', '.tsx', '.js', '.json', '.css'],
+      extensions: ['.ts', '.tsx', '.js', '.json', '.css', '.yaml'],
     },
   }
 

@@ -45,7 +45,6 @@ const ConfigTextEditor: React.FC<Props> = ({ configYaml, onSubmit }) => {
     } catch (e) {
       if (e instanceof YAMLException) {
         setYamlException(e)
-        console.log(e)
       } else if (e instanceof ZodError) {
         setZodError(e)
       } else throw e

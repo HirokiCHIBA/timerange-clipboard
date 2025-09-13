@@ -1,0 +1,159 @@
+configVersion: 1
+
+urlFormats:
+  # Datadog 'View full screen'
+  - urlWildcard: '*.datadoghq.com*fullscreen_start_ts=*'
+    timeFormat: x
+    paramStart: fullscreen_start_ts
+    paramEnd: fullscreen_end_ts
+    paramSet:
+      - key: fullscreen_paused
+        value: 'true'
+      - key: fullscreen_refresh_mode
+        value: 'paused'
+
+  # Datadog Dashboard, Datadog Monitor Status
+  - urlWildcard: '*.datadoghq.com*from_ts=*'
+    timeFormat: x
+    paramStart: from_ts
+    paramEnd: to_ts
+    paramSet:
+      - key: live
+        value: 'false'
+      - key: refresh_mode
+        value: 'paused'
+
+  # Datadog Notebook
+  - urlWildcard: '*.datadoghq.com/notebook/*/*'
+    timeFormat: x
+    paramStart: start
+    paramDuration: 
+      key: range
+      unit: milliseconds
+    paramSet:
+      - key: live
+        value: 'false'
+
+  # Datadog APM
+  - urlWildcard: '*.datadoghq.com*start=*'
+    timeFormat: x
+    paramStart: start
+    paramEnd: end
+    paramSet:
+      - key: paused
+        value: 'true'
+
+  # Splunk Search
+  - urlWildcard: '*splunk*/app/*/search*'
+    timeFormat: X
+    paramStart: earliest
+    paramEnd: latest
+    paramDelete:
+      - sid
+
+  # Splunk Report
+  - urlWildcard: '*splunk*/app/*/report?*'
+    timeFormat: X
+    paramStart: earliest
+    paramEnd: latest
+    paramDelete:
+      - sid
+
+  # Splunk Dataset
+  - urlWildcard: '*splunk*/app/*/dataset?*'
+    timeFormat: X
+    paramStart: dispatch.earliest_time
+    paramEnd: dispatch.latest_time
+    paramDelete:
+      - sid
+
+  # Splunk Dashboard
+  - urlWildcard: '*splunk*form.time.earliest=*'
+    timeFormat: X
+    paramStart: form.time.earliest
+    paramEnd: form.time.latest
+    paramDelete:
+      - sid
+
+  # Grafana Dashboard
+  - urlWildcard: '*grafana*/d/*'
+    timeFormat: x
+    paramStart: from
+    paramEnd: to
+
+  # Lightstep Dashboard
+  - urlWildcard: 'https://app.lightstep.com*/dashboard/*'
+    timeFormat: X
+    paramEnd: anchor
+    paramDuration: 
+      key: range
+      unit: seconds
+
+  # Lightstep Stream
+  - urlWildcard: 'https://app.lightstep.com*/stream/*'
+    timeFormat: X
+    paramEnd: anchor
+    paramDuration:
+      key: range
+      unit: seconds
+ 
+  # Lightstep Service Directory
+  - urlWildcard: 'https://app.lightstep.com*/service-directory/*/deployments*'
+    timeOneSecond: 1000000
+    paramStart: start_micros
+    paramEnd: end_micros
+  
+  # CloudWatch Dashboard
+  - urlWildcard: "https://*.console.aws.amazon.com/cloudwatch/*#dashboards*"
+    # The trailing `Z` can be interpreted as a UTC offset (+0), but it will be in the `+00:00` format when output.
+    # Because CloudWatch does not interpret UTC offsets like `+00:00`, treat `Z` as just a character, not a token.
+    timeFormat: YYYY-MM-DDTHH[%3A]mm[%3A]ss[Z]
+    # Since the UTC offset is not included in `timeFormat`, specify it explicitly with `timeUtcOffset`.
+    # (Without this, timestamps will be interpreted as local time.)
+    timeUtcOffset: 0
+    regexStart: (?<=start=)[^&]+
+    regexEnd: (?<=end=)[^&]+
+    regexReplace:
+      - regex: (?<!\?start=.*)$
+        replace: ?start={{ start }}&end={{ end }}
+
+  # CloudWatch Logs Insights
+  - urlWildcard: "https://*.console.aws.amazon.com/cloudwatch/*#logsV2:logs-insights*"
+    timeFormat: YYYY-MM-DDTHH[*3a]mm[*3a]ss.SSS[Z]
+    timeUtcOffset: 0
+    regexStart: (?<=start~')[0-9\-\.\*aTZ]+
+    regexEnd: (?<=end~')[0-9\-\.\*aTZ]+
+    regexReplace:
+      - regex: start~[^'~)]+
+        replace: start~'{{ start }}
+      - regex: end~[^'~)]+
+        replace: end~'{{ end }}
+      - regex: timeType~'RELATIVE
+        replace: timeType~'ABSOLUTE
+      - regex: (?<!$3FqueryDetail~.*)$
+        replace: $3FqueryDetail$3D~(end~'{{ end }}~start~'{{ start }}~timeType~'ABSOLUTE~unit~'seconds)
+
+  # CloudWatch Metrics
+  - urlWildcard: "https://*.console.aws.amazon.com/cloudwatch/*#metricsV2*"
+    timeFormat: YYYY-MM-DDTHH[*3a]mm[*3a]ss.SSS[Z]
+    timeUtcOffset: 0
+    regexStart: (?<=start~')[0-9\-\.\*aTZ]+
+    regexEnd: (?<=end~')[0-9\-\.\*aTZ]+
+    regexReplace:
+      - regex: start~[^'~)]+
+        replace: start~'{{ start }}
+      - regex: end~[^'~)]+
+        replace: end~'{{ end }}
+      - regex: graph=~\(\)
+        replace: graph=~(start~'{{ start }}~end~'{{ end }})
+  
+  # CloudWatch Metrics Explorer
+  - urlWildcard: "https://*.console.aws.amazon.com/cloudwatch/*#explorer*"
+    timeFormat: x
+    regexStart: (?<=timeRange~\(~)[0-9]+
+    regexEnd: (?<=timeRange~\(~[0-9]+~)[0-9]+
+    regexReplace:
+      - regex: timeRange~[0-9]+
+        replace: timeRange~(~{{ start }}~{{ end }})
+      - regex: (?<!\?config=.*)$
+        replace: ?config=~(timeRange~(~{{ start }}~{{ end }}))
