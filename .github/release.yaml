@@ -3,24 +3,15 @@ changelog:
     labels:
       - skip-changelog
   categories:
-    - title: Added
+    - title: New Features / Enhancements
       labels:
-        - add
-    - title: Changed
+        - enhancement
+    - title: Bug Fixes
       labels:
-        - change
-    - title: Deprecated
+        - bug
+    - title: Breaking Changes
       labels:
-        - deprecate
-    - title: Fixed
-      labels:
-        - fix
-    - title: Removed
-      labels:
-        - remove
-    - title: Security
-      labels:
-        - security
-    - title: Others
+        - breaking
+    - title: Non-Functional Changes
       labels:
         - "*"
