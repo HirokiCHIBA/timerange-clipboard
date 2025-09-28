@@ -28,7 +28,7 @@ Any website that represents time ranges being displayed using either start and e
 - Splunk
 - Grafana
 - Lightstep
-- Cloudwatch
+- CloudWatch
 
 Note: The providers of these websites are not affiliated with this extension. Please do not contact them about this extension.
 
